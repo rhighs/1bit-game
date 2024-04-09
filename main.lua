@@ -3,6 +3,7 @@ local VP_WIDTH, VP_HEIGHT = 800, 450
 local util = require("util")
 local player = require("player")
 local color = require("color")
+local ghost = require("ghost")
 
 local floor = rl.CreatePhysicsBodyRectangle(util.Vec2(VP_WIDTH/2, VP_HEIGHT/2), 500, 20, 10)
 floor.enabled = false
@@ -14,7 +15,8 @@ rl.InitPhysics()
 rl.SetTargetFPS(60)
 rl.SetPhysicsGravity(0.0, 1.0)
 
-p = player.new(util.Vec2(VP_WIDTH/2, 0))
+local p = player.new(util.Vec2(VP_WIDTH/2, 0))
+local g = ghost.new(util.Vec2(VP_WIDTH/2 + 100, 0))
 
 local last_color_swap = 0.0
 while not rl.WindowShouldClose() do
@@ -22,13 +24,17 @@ while not rl.WindowShouldClose() do
 
     rl.UpdatePhysics()
     p:update(dt)
+    g:update(dt)
+    g:set_target(p:position())
+
     p:wrap_y(0, VP_HEIGHT)
     last_color_swap = last_color_swap + rl.GetFrameTime()
 
-	  rl.BeginDrawing()
+	rl.BeginDrawing()
+	rl.ClearBackground(color.COLOR_SECONDARY)
 
-	  rl.ClearBackground(color.COLOR_SECONDARY)
     p:draw(dt)
+    g:draw(dt)
 
     if rl.IsKeyDown(rl.KEY_T) and last_color_swap > 0.2 then
         color.swap_color()
@@ -52,7 +58,7 @@ while not rl.WindowShouldClose() do
       end
     end
 
-	  rl.EndDrawing()
+	rl.EndDrawing()
 end
 
 rl.ClosePhysics()

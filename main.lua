@@ -25,9 +25,9 @@ while not rl.WindowShouldClose() do
     p:wrap_y(0, VP_HEIGHT)
     last_color_swap = last_color_swap + rl.GetFrameTime()
 
-	rl.BeginDrawing()
+	  rl.BeginDrawing()
 
-	rl.ClearBackground(color.COLOR_SECONDARY)
+	  rl.ClearBackground(color.COLOR_SECONDARY)
     p:draw(dt)
 
     if rl.IsKeyDown(rl.KEY_T) and last_color_swap > 0.2 then
@@ -52,7 +52,7 @@ while not rl.WindowShouldClose() do
       end
     end
 
-	rl.EndDrawing()
+	  rl.EndDrawing()
 end
 
 rl.ClosePhysics()

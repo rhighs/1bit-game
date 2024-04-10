@@ -1,5 +1,6 @@
 local color = require("color")
 local util = require('util')
+local vec = require("vec")
 
 local ghost = {}
 
@@ -10,7 +11,7 @@ function ghost.new(spawn_position)
     local obj = {
         velocity = 10,
         dir = 1,
-        target = util.Vec2(0, 0),
+        target = vec.v2(0, 0),
         body = rl.CreatePhysicsBodyRectangle(spawn_position, GHOST_WIDTH, GHOST_HEIGHT, GHOST_BODY_DENSITY)
     }
 
@@ -35,7 +36,7 @@ function ghost.new(spawn_position)
 
     obj.compute_direction = function (self, dt)
         local dir_vec = rl.Vector2Normalize(self.target - self.body.position)
-        return util.Vec2(dir_vec.x, 0)
+        return vec.v2(dir_vec.x, 0)
     end
 
     return obj

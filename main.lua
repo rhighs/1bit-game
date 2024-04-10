@@ -1,22 +1,25 @@
-local VP_WIDTH, VP_HEIGHT = 800, 450
-
 local util = require("util")
 local player = require("player")
 local color = require("color")
 local ghost = require("ghost")
+local camera = require("camera")
+local vec = require "vec"
 
-local floor = rl.CreatePhysicsBodyRectangle(util.Vec2(VP_WIDTH/2, VP_HEIGHT/2), 500, 20, 10)
-floor.enabled = false
+local VP_WIDTH, VP_HEIGHT = 800, 450
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(VP_WIDTH, VP_HEIGHT, "1bit ghost house")
+rl.SetTargetFPS(60)
 
 rl.InitPhysics()
-rl.SetTargetFPS(60)
 rl.SetPhysicsGravity(0.0, 1.0)
 
-local p = player.new(util.Vec2(VP_WIDTH/2, 0))
-local g = ghost.new(util.Vec2(VP_WIDTH/2 + 100, 0))
+local floor = rl.CreatePhysicsBodyRectangle(vec.v2(VP_WIDTH/2, VP_HEIGHT/2), 500, 20, 10)
+floor.enabled = false
+
+local cam = camera.new()
+local p = player.new(vec.v2(VP_WIDTH/2, 0))
+local g = ghost.new(vec.v2(VP_WIDTH/2 + 100, 0))
 
 local last_color_swap = 0.0
 while not rl.WindowShouldClose() do

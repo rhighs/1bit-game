@@ -1,5 +1,6 @@
 local color = require("color")
 local util = require("util")
+local vec = require("vec")
 
 local player = {}
 
@@ -27,7 +28,7 @@ function player.new(player_position)
         if rl.IsKeyDown(rl.KEY_S) then y_dir = y_dir + 1 end
         if rl.IsKeyDown(rl.KEY_A) then x_dir = x_dir - 1 end
         if rl.IsKeyDown(rl.KEY_D) then x_dir = x_dir + 1 end
-        local v = util.Vec2(x_dir * velocity, y_dir * velocity)
+        local v = vec.v2(x_dir * velocity, y_dir * velocity)
 
         local should_jump = rl.IsKeyDown(rl.KEY_W) or rl.IsKeyDown(rl.KEY_SPACE)
         if should_jump and self.body.isGrounded then
@@ -55,7 +56,7 @@ function player.new(player_position)
 
     -- force is reset to (0, 0) each physics step, add just a little force to make the object jump
     -- here +20% is to be intended as the force required to counter gravity + 20% of that force
-    obj.jump_force = util.Vec2(0, -(down_force*0.20))
+    obj.jump_force = vec.v2(0, -(down_force*0.20))
     return obj
 end
 

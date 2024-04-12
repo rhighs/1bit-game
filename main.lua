@@ -5,27 +5,33 @@ local ghost = require("ghost")
 local camera = require("camera")
 local vec = require "vec"
 
+local physics = require("physics")
+
 local VP_WIDTH, VP_HEIGHT = 800, 450
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(VP_WIDTH, VP_HEIGHT, "1bit ghost house")
 rl.SetTargetFPS(60)
 
-rl.InitPhysics()
-rl.SetPhysicsGravity(0.0, 1.0)
+-- rl.InitPhysics()
+-- rl.SetPhysicsGravity(0.0, 1.0)
 
-local floor = rl.CreatePhysicsBodyRectangle(vec.v2(VP_WIDTH/2, VP_HEIGHT/2), 500, 20, 10)
-floor.enabled = false
+-- local floor = rl.CreatePhysicsBodyRectangle(vec.v2(VP_WIDTH/2, VP_HEIGHT/2), 500, 20, 10)
+-- floor.enabled = false
 
 local cam = camera.new()
 local p = player.new(vec.v2(VP_WIDTH/2, 0))
 local g = ghost.new(vec.v2(VP_WIDTH/2 + 100, 0))
 
+local physics_instance = physics.new(vec.v2(0.0, 1000))
+physics_instance:add(p.body)
+-- physics_instance:add(g.body)
+
 local last_color_swap = 0.0
 while not rl.WindowShouldClose() do
     local dt = rl.GetFrameTime()
 
-    rl.UpdatePhysics()
+    physics_instance:update(dt)
     p:update(dt)
     g:update(dt)
     g:set_target(p:position())

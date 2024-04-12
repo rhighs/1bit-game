@@ -20,7 +20,7 @@ function player.new(player_position)
         rl.DrawCircle(x, y, PLAYER_BODY_RADIUS, color.COLOR_PRIMARY)
     end
 
-    obj.update = function (self, dt)
+    obj.handle_movement = function (self, dt)
         local x_dir, y_dir = 0, 0
         -- if rl.IsKeyDown(rl.KEY_W) then y_dir = y_dir - 1 end
         if rl.IsKeyDown(rl.KEY_S) then y_dir = y_dir + 1 end
@@ -35,14 +35,18 @@ function player.new(player_position)
         if should_jump and self.body.grounded then
             self.body:apply_force(self.jump_force)
         end
+    end
 
-        -- if x_dir ~= 0 and (x_dir ~= util.sign(self.body.velocity.x)) then
-        --     self.body.velocity.x = v.x
-        -- else
-        --     self.body.velocity.x = self.body.velocity.x + v.x
-        -- end
-        --
-        -- self.body.velocity.y = util.sign(self.body.velocity.y) * math.min(math.abs(self.body.velocity.y), 1000)
+    obj.update = function (self, dt)
+        self:handle_movement(dt)
+        self:collisions_update(dt)
+    end
+
+    obj.collisions_update = function (self)
+        local n_colliding = #(self.body.colliders)
+        if #(self.body.colliders) > 0 then
+            print("n colliding = " .. n_colliding)
+        end
     end
 
     obj.wrap_y = function (self, min_y, max_y)

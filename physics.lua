@@ -5,34 +5,7 @@ local DEFAULT_GRAVITY = vec.v2(0.0, 9.8)
 local AIR_RESISTANCE_COEFF = 1
 
 local physics = {}
-
--- function physics.new_rectangle(pos, w, h, density)
---     local obj = {
---         width = width, 
---         height = height,
---         position = pos,
---         velocity = vec.zero(),
---         acceleration = vec.zero(),
---         gravity = DEFAULT_GRAVITY,
--- 
---         density = density,
---         mass = density * ((width * height)),
--- 
---         update = function (self, dt)
---             self.position = self:new_pos(dt)
---         end,
--- 
---         new_pos = function (self, dt)
---             local pos = self.position + (self.velocity * dt)
---             self.velocity = self.velocity + ((self.acceleration + self.gravity) * dt)
---             return pos
---         end,
--- 
---         apply_force = function (self, force) self.acceleration = self.acceleration + (force / self.mass) end,
---     }
--- 
---     return obj
--- end
+physics.GRAVITY = vec.v2(0, 1000)
 
 function physics.new_circle(pos, r, density)
     local obj = {
@@ -42,11 +15,12 @@ function physics.new_circle(pos, r, density)
         acceleration = vec.zero(),
         gravity = DEFAULT_GRAVITY,
         force = vec.zero(),
+        colliders = {},
 
         density = density,
         mass = density * (math.pi * math.pow(r, 2)),
 
-        update = function (self, dt)
+        position_update = function (self, dt)
             if self.position.y >= 400 then
                 self.position.y = 400
                 self.acceleration.y = 0
@@ -62,8 +36,6 @@ function physics.new_circle(pos, r, density)
             -- apply forces
             local acceleration = self.acceleration + self.gravity + (self.force / self.mass)
 
-            print(acceleration)
-
             -- update positions
             self.velocity = self.velocity + (acceleration * dt)
             local position = self.position + (self.velocity * dt)
@@ -72,30 +44,36 @@ function physics.new_circle(pos, r, density)
             self.force = vec.zero()
         end,
 
+        update = function (self, dt)
+            self:position_update(dt)
+        end,
+
         apply_force = function (self, force)  self.force = self.force + force end,
     }
 
     return obj
 end
 
-function physics.new(gravity)
-    local obj = {
-        bodies = {},
-        gravity = gravity or DEFAULT_GRAVITY,
+function physics.update_physics(bodies, dt)
+    for _, body in ipairs(bodies) do
+        body.gravity = physics.GRAVITY
+        body:update(dt)
+    end
 
-        update = function (self, dt)
-            for _, body in ipairs(self.bodies) do
-                body:update(dt)
+    for i, first_body in ipairs(bodies) do
+        first_body.colliders = {}
+        for j=i+1,#bodies do
+            local second_body = bodies[j]
+            local colliding = rl.CheckCollisionCircles(
+            first_body.position, first_body.radius,
+            second_body.position, second_body.radius
+            )
+
+            if colliding then
+                table.insert(first_body.colliders, second_body)
             end
-        end,
-
-        add = function (self, body)
-            body.gravity = self.gravity
-            self.bodies[#self.bodies + 1] = body
-        end,
-    }
-
-    return obj
+        end
+    end
 end
 
 return physics

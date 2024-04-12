@@ -23,15 +23,16 @@ local cam = camera.new()
 local p = player.new(vec.v2(VP_WIDTH/2, 0))
 local g = ghost.new(vec.v2(VP_WIDTH/2 + 100, 0))
 
-local physics_instance = physics.new(vec.v2(0.0, 1000))
-physics_instance:add(p.body)
--- physics_instance:add(g.body)
+local physics_bodies = {
+    [1] = p.body,
+    [2] = g.body,
+}
 
 local last_color_swap = 0.0
 while not rl.WindowShouldClose() do
     local dt = rl.GetFrameTime()
 
-    physics_instance:update(dt)
+    physics.update_physics(physics_bodies, dt)
     p:update(dt)
     g:update(dt)
     g:set_target(p:position())

@@ -20,12 +20,14 @@ function camera.new(start_pos)
             local orig   = vec.floor(self.pos / 32)
             local endvec = vec.floor((self.pos + screen_size) / 32)
             for y = orig.y, endvec.y do
-                for x = orig.x, endvec.x do
-                    elem = grid[y][x]
-                    if elem ~= nil and elem ~= 0 then
-                        level_coords = vec.v2(x, y) * 32
-                        screen_coords = level_coords - self.pos
-                        rl.DrawTextureV(get_texture(elem), screen_coords, rl.WHITE)
+                if grid[y] ~= nil then
+                    for x = orig.x, endvec.x do
+                        elem = grid[y][x]
+                        if elem ~= nil and elem ~= 0 then
+                            level_coords = vec.v2(x, y) * 32
+                            screen_coords = level_coords - self.pos
+                            rl.DrawTextureV(get_texture(elem), screen_coords, rl.WHITE)
+                        end
                     end
                 end
             end

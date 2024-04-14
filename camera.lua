@@ -1,48 +1,46 @@
 local camera = {}
 
+local ffi = require("ffi")
 local vec = require("vec")
+local util = require "util"
 
-function camera.new(start_pos)
+function camera.new(screen_size, start_pos)
     return {
-        pos = start_pos,
+        camera = ffi.new("Camera2D", screen_size / 2, vec.zero(), 0, 1),
+        screen_size = screen_size,
+        debug_counter = 0,
 
-        update = function (self)
-            self.pos.x = self.pos.x
-                       + (rl.IsKeyDown(rl.KEY_D) and  1 or 0)
-                       + (rl.IsKeyDown(rl.KEY_A) and -1 or 0)
-            self.pos.y = self.pos.y
-                       + (rl.IsKeyDown(rl.KEY_S) and  1 or 0)
-                       + (rl.IsKeyDown(rl.KEY_W) and -1 or 0)
+        get = function (self) return self.camera end,
+
+        top_left_world_pos = function (self)
+            return rl.GetScreenToWorld2D(vec.zero(), self.camera)
         end,
 
-        draw = function (self, grid, screen_size, get_texture)
-            -- transform camera coords into tile coords
-            local orig   = vec.floor(self.pos / 32)
-            local endvec = vec.floor((self.pos + screen_size) / 32)
-            for y = orig.y, endvec.y do
-                if grid[y] ~= nil then
-                    for x = orig.x, endvec.x do
-                        elem = grid[y][x]
-                        if elem ~= nil and elem ~= 0 then
-                            level_coords = vec.v2(x, y) * 32
-                            screen_coords = level_coords - self.pos
-                            rl.DrawTextureV(get_texture(elem), screen_coords, rl.WHITE)
-                        end
-                    end
-                end
+        bottom_right_world_pos = function (self)
+            return rl.GetScreenToWorld2D(self.screen_size, self.camera)
+        end,
+
+        debug_move = function (self)
+            self.debug_counter = self.debug_counter + 1
+            if self.debug_counter == 3 then
+                self.debug_counter = 0
+                self.camera.target.x = self.camera.target.x
+                                     + (rl.IsKeyDown(rl.KEY_A) and -32 or 0)
+                                     + (rl.IsKeyDown(rl.KEY_D) and  32 or 0)
+                self.camera.target.y =  self.camera.target.y
+                                     + (rl.IsKeyDown(rl.KEY_W) and -32 or 0)
+                                     + (rl.IsKeyDown(rl.KEY_S) and  32 or 0)
+                self.camera.zoom = self.camera.zoom
+                                 + (rl.IsKeyDown(rl.KEY_F) and 1 or 0)
+                                 + (rl.IsKeyDown(rl.KEY_G) and -1 or 0)
             end
         end,
 
-        draw_enemies = function (self, enemies, screen_size, get_texture)
-            local orig   = self.pos
-            local endvec = self.pos + screen_size
-            for _, e in ipairs(enemies) do
-                c = e.pos * 32 - self.pos
-                if c.x >= 0 and c.x <= screen_size.x and c.y >= 0 and c.y <= screen_size.y then
-                    rl.DrawTextureV(get_texture(e.enemy_id), c, rl.WHITE)
-                end
-            end
-        end
+        is_inside = function (self, v)
+            u = rl.GetWorldToScreen2D(v, self.camera)
+            return u.x >= 0 and u.x <= self.screen_size.x
+               and u.y >= 0 and u.y <= self.screen_size.y
+        end,
     }
 end
 

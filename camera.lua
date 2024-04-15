@@ -12,6 +12,8 @@ function camera.new(screen_size, start_pos)
 
         get = function (self) return self.camera end,
 
+        retarget = function (self, target) self.camera.target = target end,
+
         top_left_world_pos = function (self)
             return rl.GetScreenToWorld2D(vec.zero(), self.camera)
         end,

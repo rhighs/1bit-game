@@ -13,7 +13,7 @@ local VP = vec.v2(VP_WIDTH, VP_HEIGHT)
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(VP.x, VP.y, "1bit ghost house")
-rl.SetTargetFPS(60)
+-- rl.SetTargetFPS(60)
 
 -- rl.InitPhysics()
 -- rl.SetPhysicsGravity(0.0, 1.0)
@@ -70,15 +70,6 @@ end
 while not rl.WindowShouldClose() do
     local dt = rl.GetFrameTime()
 
-    cam:debug_move()
-
-    -- physics.update_physics(physics_bodies, dt)
-    -- p:update(dt)
-    -- p:wrap_y(0, VP_HEIGHT)
-    -- g:update(dt)
-    -- g:set_target(p:position())
-    -- cam.pos = p.body.position - (VP/2)
-
     last_color_swap = last_color_swap + rl.GetFrameTime()
     if rl.IsKeyDown(rl.KEY_T) and last_color_swap > 0.2 then
         color.swap_color()
@@ -88,13 +79,23 @@ while not rl.WindowShouldClose() do
 	rl.BeginDrawing()
 	rl.ClearBackground(color.COLOR_SECONDARY)
 
+    rl.DrawFPS(10, 10)
+
     rl.BeginMode2D(cam:get())
     draw_tiles(level_data.ground, textures)
     draw_enemies(level_data.enemies, textures, cam)
+
+    physics.update_physics(level_data.ground, physics_bodies, dt)
+    p:update(dt)
+    p:wrap_y(0, VP_HEIGHT)
+    g:update(dt)
+    g:set_target(p:position())
+    cam:retarget(p:position())
+    p:draw(dt)
+    g:draw(dt)
+
     rl.EndMode2D()
 
-    -- p:draw(dt)
-    -- g:draw(dt)
 	rl.EndDrawing()
 end
 

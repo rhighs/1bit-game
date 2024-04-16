@@ -13,7 +13,6 @@ local VP = vec.v2(VP_WIDTH, VP_HEIGHT)
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(VP.x, VP.y, "1bit ghost house")
--- rl.SetTargetFPS(60)
 
 -- rl.InitPhysics()
 -- rl.SetPhysicsGravity(0.0, 1.0)
@@ -87,7 +86,6 @@ while not rl.WindowShouldClose() do
 
     physics.update_physics(level_data.ground, physics_bodies, dt)
     p:update(dt)
-    p:wrap_y(0, VP_HEIGHT)
     g:update(dt)
     g:set_target(p:position())
     cam:retarget(p:position())

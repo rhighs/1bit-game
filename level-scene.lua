@@ -30,13 +30,13 @@ function level_scene.new()
     return {
         player = player_lib.new(vec.v2(VP.x/2, 0)),
         data = {},
-        textures = level_loader.load_textures(),
         cam = camera.new(VP, vec.v2(0, 0)),
         physics_bodies = {},
         bg_color = rl.BLACK,
         last_color_swap = 0.0,
 
         init = function (self, data)
+            print("loading level ", data.level)
             self.data = level_loader.load(require(data.level))
             self.physics_bodies = {
                 self.player.body,
@@ -64,7 +64,7 @@ function level_scene.new()
                     for x = tl.x, br.x do
                         id = grid[y][x]
                         if id ~= nil and id ~= 0 then
-                            rl.DrawTextureV(self.textures.tiles[id], vec.v2(x, y) * 32, rl.WHITE)
+                            rl.DrawTextureV(self.data.textures[id], vec.v2(x, y) * 32, rl.WHITE)
                         end
                     end
                 end

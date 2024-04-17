@@ -1,8 +1,7 @@
 return {
-  version = "1.10",
+  version = "1.5",
   luaversion = "5.1",
-  tiledversion = "1.10.2",
-  class = "",
+  tiledversion = "1.8.2",
   orientation = "orthogonal",
   renderorder = "right-down",
   width = 200,
@@ -16,17 +15,152 @@ return {
     {
       name = "random_tileset",
       firstgid = 1,
-      filename = "random_tileset.tsx"
+      tilewidth = 33,
+      tileheight = 32,
+      spacing = 0,
+      margin = 0,
+      columns = 0,
+      objectalignment = "unspecified",
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 1,
+        height = 1
+      },
+      properties = {},
+      wangsets = {},
+      tilecount = 3,
+      tiles = {
+        {
+          id = 0,
+          image = "../assets/left.png",
+          width = 33,
+          height = 32
+        },
+        {
+          id = 1,
+          image = "../assets/middle.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 2,
+          image = "../assets/right.png",
+          width = 32,
+          height = 32
+        }
+      }
     },
     {
       name = "enemies",
       firstgid = 4,
-      filename = "enemies.tsx"
+      tilewidth = 32,
+      tileheight = 32,
+      spacing = 0,
+      margin = 0,
+      columns = 0,
+      objectalignment = "unspecified",
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 1,
+        height = 1
+      },
+      properties = {},
+      wangsets = {},
+      tilecount = 1,
+      tiles = {
+        {
+          id = 0,
+          image = "../assets/ghost.png",
+          width = 32,
+          height = 32
+        }
+      }
     },
     {
       name = "decors",
       firstgid = 5,
-      filename = "decors.tsx"
+      tilewidth = 32,
+      tileheight = 32,
+      spacing = 0,
+      margin = 0,
+      columns = 0,
+      objectalignment = "unspecified",
+      tileoffset = {
+        x = 0,
+        y = 0
+      },
+      grid = {
+        orientation = "orthogonal",
+        width = 1,
+        height = 1
+      },
+      properties = {},
+      wangsets = {},
+      tilecount = 9,
+      tiles = {
+        {
+          id = 0,
+          image = "../assets/grass.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 1,
+          image = "../assets/column_bottom.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 2,
+          image = "../assets/column_middle.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 3,
+          image = "../assets/column_top.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 4,
+          image = "../assets/door_bottom_left.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 5,
+          image = "../assets/door_bottom_right.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 6,
+          image = "../assets/door_top_left.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 7,
+          image = "../assets/door_top_right.png",
+          width = 32,
+          height = 32
+        },
+        {
+          id = 8,
+          image = "../assets/window.png",
+          width = 32,
+          height = 32
+        }
+      }
     }
   },
   layers = {
@@ -38,7 +172,6 @@ return {
       height = 50,
       id = 1,
       name = "ground",
-      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -108,7 +241,6 @@ return {
       height = 50,
       id = 2,
       name = "enemies",
-      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -178,7 +310,6 @@ return {
       height = 50,
       id = 3,
       name = "decor",
-      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,

@@ -35,7 +35,6 @@ function physics.new_circle(pos, r, density)
             self.velocity = self.velocity + (self.acceleration * dt) + (self.gravity * dt) + (acceleration_from_force * dt)
             local position = self.position + (self.velocity * dt)
             self.position = position
-            util.pyprint(self.velocity)
 
             self.force = vec.zero()
         end,
@@ -90,7 +89,6 @@ function physics.update_physics(grid, bodies, dt)
             local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
             if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
                 table.insert(static_bodies, tile)
-                rl.DrawRectangle(tile.x * 32, tile.y * 32, 32, 32, rl.GREEN)
             end
         end
 

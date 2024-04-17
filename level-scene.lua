@@ -32,7 +32,6 @@ function level_scene.new()
         data = {},
         textures = level_loader.load_textures(),
         cam = camera.new(VP, vec.v2(0, 0)),
-        -- ghost = ghost.new(vec.v2(VP.x/2 + 100, 0)),
         physics_bodies = {},
         bg_color = rl.BLACK,
         last_color_swap = 0.0,
@@ -41,7 +40,6 @@ function level_scene.new()
             self.data = level_loader.load(require(data.level))
             self.physics_bodies = {
                 self.player.body,
-                -- self.ghost.body,
             }
         end,
 
@@ -55,9 +53,6 @@ function level_scene.new()
 
             physics.update_physics(self.data.ground, self.physics_bodies, dt)
             self.player:update(dt)
-            -- self.player:wrap_y(0, VP_HEIGHT)
-            -- self.ghost:update(dt)
-            -- self.ghost:set_target(self.player:position())
             self.cam:retarget(self.player:position())
         end,
 
@@ -85,7 +80,6 @@ function level_scene.new()
             end
 
             self.player:draw(dt)
-            -- self.ghost:draw(dt)
             rl.EndMode2D()
         end,
 

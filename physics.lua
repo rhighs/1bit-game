@@ -35,7 +35,6 @@ function physics.new_circle(pos, r, density)
             self.velocity = self.velocity + (self.acceleration * dt) + (self.gravity * dt) + (acceleration_from_force * dt)
             local position = self.position + (self.velocity * dt)
             self.position = position
-            util.pyprint(self.velocity)
 
             self.force = vec.zero()
         end,

@@ -26,7 +26,7 @@ function start_screen.new()
 
         should_change = function (self)
             return rl.IsKeyDown(rl.KEY_ENTER)
-            and { name = "level", data = { level = "leveldata/level2" } }
+            and { name = "level", data = { level = "leveldata/level3" } }
             or nil
         end
     }

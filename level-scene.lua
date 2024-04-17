@@ -56,22 +56,27 @@ function level_scene.new()
             self.cam:retarget(self.player:position())
         end,
 
-        draw = function (self)
-            rl.ClearBackground(self.bg_color)
-            rl.BeginMode2D(self.cam:get())
-
+        draw_simple_grid = function (self, grid)
             local tl = vec.floor(self.cam:top_left_world_pos() / 32)
             local br = vec.floor(self.cam:bottom_right_world_pos() / 32)
             for y = tl.y, br.y do
-                if self.data.ground[y] ~= nil then
+                if grid[y] ~= nil then
                     for x = tl.x, br.x do
-                        id = self.data.ground[y][x]
+                        id = grid[y][x]
                         if id ~= nil and id ~= 0 then
                             rl.DrawTextureV(self.textures.tiles[id], vec.v2(x, y) * 32, rl.WHITE)
                         end
                     end
                 end
             end
+        end,
+
+        draw = function (self)
+            rl.ClearBackground(self.bg_color)
+            rl.BeginMode2D(self.cam:get())
+
+            self:draw_simple_grid(self.data.ground)
+            self:draw_simple_grid(self.data.decor)
 
             for _, e in ipairs(self.data.enemies) do
                 if self.cam:is_inside(e.pos) then

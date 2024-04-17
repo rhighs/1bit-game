@@ -16,7 +16,12 @@ function level_loader.load_textures()
         tiles = {
             [1] = rl.LoadTexture("assets/left.png"),
             [2] = rl.LoadTexture("assets/middle.png"),
-            [3] = rl.LoadTexture("assets/right.png")
+            [3] = rl.LoadTexture("assets/right.png"),
+            [4] = rl.LoadTexture("assets/door_bottom_left.png"),
+            [5] = rl.LoadTexture("assets/door_bottom_right.png"),
+            [6] = rl.LoadTexture("assets/door_top_left.png"),
+            [7] = rl.LoadTexture("assets/door_top_right.png"),
+            [8] = rl.LoadTexture("assets/window.png")
         },
         enemies = {
             [4] = rl.LoadTexture("assets/ghost.png")
@@ -24,7 +29,51 @@ function level_loader.load_textures()
     }
 end
 
+function read_layer_data(layer)
+    local data = {}
+    for y = 1, layer.height do
+        if data[y] == nil then
+            data[y] = {}
+        end
+        for x = 1, layer.width do
+            local id = layer.data[(y - 1) * layer.width + x]
+            if id ~= nil and id ~= 0 then
+                data[y][x] = id
+            end
+        end
+    end
+    return data
+end
+
 function level_loader.load(data)
+    local ground_layer = find_layer(data, "ground")
+    local ground = read_layer_data(ground_layer)
+
+    local decor_layer = find_layer(data, "decor")
+    local decor = read_layer_data(decor_layer)
+
+    local enemies_layer = find_layer(data, "enemies")
+    local enemies_data = read_layer_data(enemies_layer)
+    local enemies = {}
+    for y, row in ipairs(enemies_data) do
+        for x, id in ipairs(row) do
+            if id ~=nil then
+                table.insert(enemies, {
+                    pos = vec.v2(x, y) * 32,
+                    enemy_id = id
+                })
+            end
+        end
+    end
+
+    return {
+        ground = ground,
+        enemies = enemies,
+        decor = decor
+    }
+end
+
+function level_loader.load_chunked(data)
     local ground = {}
     for _, chunk in ipairs(find_layer(data, "ground").chunks) do
         for y = 1, chunk.height do

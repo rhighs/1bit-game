@@ -54,21 +54,18 @@ function read_layer_data(layer)
 end
 
 function level_loader.load(data)
-    local ground_layer = find_layer(data, "ground")
-    local ground = read_layer_data(ground_layer)
+    local ground = read_layer_data(find_layer(data, "ground"))
+    local decor = read_layer_data(find_layer(data, "decor"))
+    local enemies_data = read_layer_data(find_layer(data, "enemies"))
 
-    local decor_layer = find_layer(data, "decor")
-    local decor = read_layer_data(decor_layer)
-
-    local enemies_layer = find_layer(data, "enemies")
-    local enemies_data = read_layer_data(enemies_layer)
     local enemies = {}
-    for y, row in ipairs(enemies_data) do
-        for x, id in ipairs(row) do
-            if id ~=nil then
+    local enemy_tileset = find_tileset(data, "enemies")
+    for y, row in pairs(enemies_data) do
+        for x, id in pairs(row) do
+            if id ~= nil then
                 table.insert(enemies, {
                     pos = vec.v2(x, y) * 32,
-                    enemy_id = id
+                    enemy_id = id - enemy_tileset.firstgid
                 })
             end
         end

@@ -8,37 +8,34 @@ local ghost = {}
 local GHOST_BODY_DENSITY = 1.0
 local GHOST_RADIUS = 10
 
-function ghost.new(spawn_position)
-    local obj = {
-        speed = 150,
-        body = physics.new_circle(spawn_position, GHOST_RADIUS, GHOST_BODY_DENSITY),
-        dir = 1,
-        target = vec.v2(0, 0),
+function ghost.new(spawn_pos)
+    return {
+        left = rl.LoadTexture("assets/ghost.png"),
+        right = rl.LoadTexture("assets/ghost-right.png"),
+        pos = spawn_pos,
+        dir = -1,
+        n = 0,
+        frame_counter = 0,
+
+        update = function (self, dt)
+            self.pos = vec.v2(
+                self.pos.x + self.dir * 4,
+                self.pos.y + math.sin(self.n/10) * 4
+            )
+            self.n = self.n + 1
+            if self.n % 100 == 0 then
+                self.dir = -self.dir
+            end
+        end,
+
+        draw = function (self)
+            if self.dir == -1 then
+                rl.DrawTextureV(self.left, self.pos, rl.WHITE)
+            else
+                rl.DrawTextureV(self.right, self.pos, rl.WHITE)
+            end
+        end,
     }
-
-    obj.draw = function (self, dt)
-        local x, y = self.body.position.x, self.body.position.y
-        rl.DrawCircle(x, y, GHOST_RADIUS, color.COLOR_POSITIVE)
-    end
-
-    obj.update = function (self, dt)
-        local speed = self.speed
-        local x_dir, y_dir = 0, 0
-        local dir_vec = self:compute_direction(dt)
-        local v = dir_vec * speed
-        self.body.velocity.x = v.x
-    end
-
-    obj.set_target = function (self, target)
-        self.target = target
-    end
-
-    obj.compute_direction = function (self, dt)
-        local dir_vec = rl.Vector2Normalize(self.target - self.body.position)
-        return vec.v2(dir_vec.x, 0)
-    end
-
-    return obj
 end
 
 return ghost

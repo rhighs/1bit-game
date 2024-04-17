@@ -34,6 +34,7 @@ function level_scene.new()
         physics_bodies = {},
         bg_color = rl.BLACK,
         last_color_swap = 0.0,
+        enemies = {},
 
         init = function (self, data)
             print("loading level ", data.level)
@@ -41,6 +42,14 @@ function level_scene.new()
             self.physics_bodies = {
                 self.player.body,
             }
+            util.pyprint("enemies = ", self.data.enemies)
+            for _, e in ipairs(self.data.enemies) do
+                util.pyprint("loading enemy ", e)
+                if e.enemy_id == 0 then
+                    table.insert(self.enemies, ghost.new(e.pos))
+                end
+                -- add more enemies here
+            end
         end,
 
         update = function (self, dt)
@@ -54,6 +63,10 @@ function level_scene.new()
             physics.update_physics(self.data.ground, self.physics_bodies, dt)
             self.player:update(dt)
             self.cam:retarget(self.player:position())
+
+            for _, e in ipairs(self.enemies) do
+                e:update(dt)
+            end
         end,
 
         draw_simple_grid = function (self, grid)
@@ -78,9 +91,9 @@ function level_scene.new()
             self:draw_simple_grid(self.data.ground)
             self:draw_simple_grid(self.data.decor)
 
-            for _, e in ipairs(self.data.enemies) do
+            for _, e in ipairs(self.enemies) do
                 if self.cam:is_inside(e.pos) then
-                    rl.DrawTextureV(self.textures.enemies[e.enemy_id], e.pos, rl.WHITE)
+                    e:draw()
                 end
             end
 

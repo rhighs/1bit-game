@@ -1,4 +1,4 @@
-start_screen = {}
+local start_screen = {}
 
 function start_screen.new()
     return {
@@ -25,7 +25,9 @@ function start_screen.new()
         end,
 
         should_change = function (self)
-            return rl.IsKeyDown(rl.KEY_ENTER) and "level" or nil
+            return rl.IsKeyDown(rl.KEY_ENTER)
+            and { name = "level", data = { level = "leveldata/level2" } }
+            or nil
         end
     }
 end

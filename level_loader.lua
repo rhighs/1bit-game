@@ -26,7 +26,7 @@ end
 
 function load_textures(data)
     local textures = {}
-    local ground = find_tileset(data, "random_tileset")
+    local ground = find_tileset(data, "ground")
     for _, t in ipairs(ground.tiles) do
         textures[ground.firstgid + t.id] = rl.LoadTexture(t.image:sub(4))
     end
@@ -56,10 +56,10 @@ end
 function level_loader.load(data)
     local ground = read_layer_data(find_layer(data, "ground"))
     local decor = read_layer_data(find_layer(data, "decor"))
-    local enemies_data = read_layer_data(find_layer(data, "enemies"))
+    local enemies_data = read_layer_data(find_layer(data, "entities"))
 
     local enemies = {}
-    local enemy_tileset = find_tileset(data, "enemies")
+    local enemy_tileset = find_tileset(data, "entities")
     for y, row in pairs(enemies_data) do
         for x, id in pairs(row) do
             if id ~= nil then

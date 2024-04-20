@@ -36,11 +36,12 @@ function level_scene.new()
         bg_color = rl.BLACK,
         last_color_swap = 0.0,
         level_bounds = nil,
-        swap_scene = nil,
+        do_game_over = false,
 
         enemies = {},
 
         init = function (self, data)
+            self.do_game_over = false
             self.data = level_loader.load(require(data.level))
             self.player = player_lib.new(self.data.level_start)
             self.level_bounds = make_level_bounds(self.data.level_bounds)
@@ -86,7 +87,7 @@ function level_scene.new()
         end,
 
         game_over = function (self)
-            self.swap_scene = start_screen.new()
+            self.do_game_over = true
         end,
 
         draw_simple_grid = function (self, grid)
@@ -128,12 +129,7 @@ function level_scene.new()
         end,
 
         should_change = function (self)
-            local scene = self.swap_scene
-            if scene ~= nil then
-                self.swap_scene = nil
-                return scene
-            end
-            return nil
+            return self.do_game_over and { name = "gameover" } or nil
         end
     }
 end

@@ -3,6 +3,7 @@ local game_over = {}
 local scene = {}
 
 function scene:init()
+    self.n = self.duration
 end
 
 function scene:update()
@@ -20,7 +21,7 @@ end
 
 function game_over.new(duration)
     scene.__index = scene
-    return setmetatable({ n = duration }, scene)
+    return setmetatable({ duration = duration }, scene)
 end
 
 return game_over

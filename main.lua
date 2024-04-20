@@ -14,7 +14,7 @@ local scenes = {
     list = {
         ["start"] = start_screen_controller.new(),
         ["level"] = level_scene.new(),
-        ["gameover"] = game_over.new()
+        ["gameover"] = game_over.new(100)
     },
     cur = "start",
 
@@ -28,7 +28,6 @@ while not rl.WindowShouldClose() do
     next_scene = scenes:get():should_change()
     if next_scene ~= nil then
         scenes.cur = next_scene.name
-        util.pyprint(scenes)
         scenes:get():init(next_scene.data)
     end
 

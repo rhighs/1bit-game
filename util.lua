@@ -1,4 +1,3 @@
-local color = require("color")
 local ffi = require "ffi"
 
 local util = {}
@@ -6,12 +5,12 @@ local util = {}
 function util.Color(r, g, b, a) return ffi.new("Color", r, g, b, a) end
 function util.Rec(x, y, w, h) return ffi.new("Rectangle", x, y, w, h) end
 function util.sign(a) return a >= 0 and 1 or -1 end
-function util.print(text, y) rl.DrawText(text, 0, y * 24, 24, color.COLOR_PRIMARY) end
+function util.print(text, y) rl.DrawText(text, 0, y * 24, 24, rl.WHITE) end
 
 util.DEFAULT_FORMAT_INDENT = 4
 
 function render_indent(indent)
-    return indent and string.rep(" ", indent) or "" 
+    return indent and string.rep(" ", indent) or ""
 end
 
 function _format_table(t, indent)
@@ -63,6 +62,15 @@ function util.sign(x)
     return x < 0 and -1
         or x > 0 and 1
         or 0
+end
+
+function util.table_contains(t, callable)
+    for k, v in pairs(t) do
+        if callable(v) then
+            return true
+        end
+    end
+    return false
 end
 
 return util

@@ -1,6 +1,5 @@
-local util = require('util')
-local vec = require("vec")
-local table_utils = require("table_utils")
+local util = require 'util'
+local vec = require "vec"
 
 local AIR_RESISTANCE_COEFF = 1
 
@@ -67,7 +66,7 @@ end
 
 function is_grounded(position, static_bodies)
     local current_tile = vec.floor(position / 32)
-    local result = table_utils.contains(
+    local result = util.table_contains(
         static_bodies,
         function(tile) return tile.x == current_tile.x and tile.y == (current_tile.y + 1) end
     )

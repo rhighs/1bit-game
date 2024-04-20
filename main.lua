@@ -1,19 +1,13 @@
-local util = require("util")
-local player = require("player")
-local color = require("color")
-local camera = require("camera")
+local consts = require "consts"
+local color = require "color"
+local util = require "util"
 local vec = require "vec"
-local level_loader = require "level_loader"
 local start_screen_controller = require "start-screen-controller"
 local level_scene = require "level-scene"
-local physics = require("physics")
 local game_over = require "game-over-scene"
 
-local VP_WIDTH, VP_HEIGHT = 800, 450
-local VP = vec.v2(VP_WIDTH, VP_HEIGHT)
-
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
-rl.InitWindow(VP.x, VP.y, "1bit ghost house")
+rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
 rl.SetTargetFPS(60)
 
 local scenes = {

@@ -1,37 +1,24 @@
-local util = require("util")
+local consts = require "consts"
+local util = require "util"
 local player_lib = require "player"
 local level_loader = require "level_loader"
-local camera = require("camera")
-local color = require("color")
+local camera = require "camera"
+local color = require "color"
 local vec = require "vec"
-local physics = require("physics")
-local ghost = require("ghost")
+local physics = require "physics"
+local ghost = require "ghost"
 local level_exit = require "level-exit"
 
-local VP_WIDTH, VP_HEIGHT = 800, 450
-local VP = vec.v2(VP_WIDTH, VP_HEIGHT)
-
 local level_scene = {}
-
-function dump_ground(t)
-    s = "{\n"
-    for y, row in pairs(t) do
-        for x, v in pairs(row) do
-            s = s .. "[" .. tostring(x) .. "][" .. tostring(y) .. "] = " .. tostring(v) .. "\n"
-        end
-    end
-    s = s .. "}"
-    print(s)
-end
 
 function draw_enemies(enemies, textures, camera)
 end
 
 function level_scene.new()
     return {
-        player = player_lib.new(vec.v2(VP.x/2, 0)),
+        player = player_lib.new(vec.v2(consts.VP_WIDTH/2, 0)),
         data = {},
-        cam = camera.new(VP, vec.v2(0, 0)),
+        cam = camera.new(consts.VP, vec.v2(0, 0)),
         physics_bodies = {},
         bg_color = rl.BLACK,
         last_color_swap = 0.0,

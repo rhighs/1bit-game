@@ -1,7 +1,6 @@
-local color = require("color")
-local util = require("util")
-local vec = require("vec")
-local physics = require("physics")
+local util = require "util"
+local vec = require "vec"
+local physics = require "physics"
 
 local player = {}
 
@@ -18,7 +17,7 @@ function player.new(player_position)
 
     obj.draw = function(self, dt)
         local x, y = self.body.position.x, self.body.position.y
-        rl.DrawCircle(x, y, PLAYER_BODY_RADIUS, color.COLOR_PRIMARY)
+        rl.DrawCircle(x, y, PLAYER_BODY_RADIUS, rl.WHITE)
     end
 
     obj.handle_movement = function(self, dt)

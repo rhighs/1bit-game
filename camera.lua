@@ -1,7 +1,7 @@
 local camera = {}
 
-local ffi = require("ffi")
-local vec = require("vec")
+local ffi = require "ffi"
+local vec = require "vec"
 local util = require "util"
 
 function camera.new(screen_size, start_pos)

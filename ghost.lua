@@ -1,12 +1,7 @@
-local color = require("color")
-local util = require('util')
-local vec = require("vec")
-local physics = require("physics")
+local util = require 'util'
+local vec = require "vec"
 
 local ghost = {}
-
-local GHOST_BODY_DENSITY = 1.0
-local GHOST_RADIUS = 10
 
 function ghost.new(spawn_pos)
     return {

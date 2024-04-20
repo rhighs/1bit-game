@@ -1,3 +1,5 @@
+local consts = require "consts"
+
 local start_screen = {}
 
 function start_screen.new()
@@ -15,12 +17,12 @@ function start_screen.new()
         end,
 
         draw = function (self)
-            width = rl.MeasureText("GHOSTS", 92)
-            rl.DrawText("GHOSTS", 800/2 - width/2, 100, 92, rl.WHITE)
+            local width = rl.MeasureText("GHOSTS", 92)
+            rl.DrawText("GHOSTS", consts.VP_WIDTH/2 - width/2, 100, 92, rl.WHITE)
             width = rl.MeasureText("START", 20)
-            rl.DrawText("START", 800/2 - width/2, 300, 20, rl.WHITE)
+            rl.DrawText("START", consts.VP_WIDTH/2 - width/2, 300, 20, rl.WHITE)
             if self.counter <= 25 then
-                rl.DrawTexture(self.cursor, 800/2 - width/2 - 24, 300, rl.WHITE)
+                rl.DrawTexture(self.cursor, consts.VP_WIDTH/2 - width/2 - 24, 300, rl.WHITE)
             end
         end,
 

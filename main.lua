@@ -28,6 +28,7 @@ while not rl.WindowShouldClose() do
     next_scene = scenes:get():should_change()
     if next_scene ~= nil then
         scenes.cur = next_scene.name
+        util.pyprint(scenes)
         scenes:get():init(next_scene.data)
     end
 

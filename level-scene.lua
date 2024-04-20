@@ -8,24 +8,42 @@ local vec = require "vec"
 local physics = require "physics"
 local ghost = require "ghost"
 local level_exit = require "level-exit"
+local start_screen = require "start-screen-controller"
 
 local level_scene = {}
 
 function draw_enemies(enemies, textures, camera)
 end
 
+level_scene.LEVEL_BOUNDS_PADDING = 100
+
+function make_level_bounds(layer_bounds)
+    return util.Rec(
+        layer_bounds.x - level_scene.LEVEL_BOUNDS_PADDING,
+        layer_bounds.y - level_scene.LEVEL_BOUNDS_PADDING,
+        layer_bounds.width + (level_scene.LEVEL_BOUNDS_PADDING * 2),
+        layer_bounds.height + (level_scene.LEVEL_BOUNDS_PADDING * 2) 
+    )
+end
+
 function level_scene.new()
     return {
-        player = player_lib.new(vec.v2(consts.VP_WIDTH/2, 0)),
+        name = "level",
+        player = nil,
         data = {},
         cam = camera.new(consts.VP, vec.v2(0, 0)),
         physics_bodies = {},
         bg_color = rl.BLACK,
         last_color_swap = 0.0,
+        level_bounds = nil,
+        swap_scene = nil,
+
         enemies = {},
 
         init = function (self, data)
             self.data = level_loader.load(require(data.level))
+            self.player = player_lib.new(self.data.level_start)
+            self.level_bounds = make_level_bounds(self.data.level_bounds)
             self.physics_bodies = {
                 self.player.body,
             }
@@ -41,7 +59,12 @@ function level_scene.new()
             end
         end,
 
-        update = function (self, dt)
+        update = function(self, dt)
+            if not self:check_bounds() then
+                self:game_over()
+                return
+            end
+
             self.cam:debug_move()
             self.last_color_swap = self.last_color_swap + rl.GetFrameTime()
             if rl.IsKeyDown(rl.KEY_T) and self.last_color_swap > 0.2 then
@@ -56,6 +79,14 @@ function level_scene.new()
             for _, e in ipairs(self.enemies) do
                 e:update(dt)
             end
+        end,
+
+        check_bounds = function (self)
+            return rl.CheckCollisionCircleRec(self.player:position(), self.player.body.radius, self.level_bounds)
+        end,
+
+        game_over = function (self)
+            self.swap_scene = start_screen.new()
         end,
 
         draw_simple_grid = function (self, grid)
@@ -80,6 +111,9 @@ function level_scene.new()
             rl.ClearBackground(self.bg_color)
             rl.BeginMode2D(self.cam:get())
 
+            -- debug draw level bounds
+            rl.DrawRectangleLines(self.level_bounds.x, self.level_bounds.y, self.level_bounds.width, self.level_bounds.height, rl.RED)
+
             self:draw_simple_grid(self.data.ground)
             self:draw_simple_grid(self.data.decor)
 
@@ -94,6 +128,11 @@ function level_scene.new()
         end,
 
         should_change = function (self)
+            local scene = self.swap_scene
+            if scene ~= nil then
+                self.swap_scene = nil
+                return scene
+            end
             return nil
         end
     }

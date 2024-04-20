@@ -4,6 +4,7 @@ local start_screen = {}
 
 function start_screen.new()
     return {
+        name = "start",
         cursor = rl.LoadTexture("assets/cursor.png"),
         counter = 0,
 

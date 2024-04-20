@@ -6,6 +6,7 @@ local color = require("color")
 local vec = require "vec"
 local physics = require("physics")
 local ghost = require("ghost")
+local level_exit = require "level-exit"
 
 local VP_WIDTH, VP_HEIGHT = 800, 450
 local VP = vec.v2(VP_WIDTH, VP_HEIGHT)
@@ -37,16 +38,17 @@ function level_scene.new()
         enemies = {},
 
         init = function (self, data)
-            print("loading level ", data.level)
             self.data = level_loader.load(require(data.level))
             self.physics_bodies = {
                 self.player.body,
             }
-            util.pyprint("enemies = ", self.data.enemies)
             for _, e in ipairs(self.data.enemies) do
-                util.pyprint("loading enemy ", e)
                 if e.enemy_id == 0 then
                     table.insert(self.enemies, ghost.new(e.pos))
+                elseif e.enemy_id == 1 then
+                    table.insert(self.enemies, level_exit.new(e.pos, "assets/level_start.png"))
+                elseif e.enemy_id == 2 then
+                    table.insert(self.enemies, level_exit.new(e.pos, "assets/level_end.png"))
                 end
                 -- add more enemies here
             end
@@ -77,6 +79,9 @@ function level_scene.new()
                     for x = tl.x, br.x do
                         id = grid[y][x]
                         if id ~= nil and id ~= 0 then
+                            if self.data.textures[id] == nil then
+                                error(util.pystr("trying to draw tex id ", id, "at pos ", x, y))
+                            end
                             rl.DrawTextureV(self.data.textures[id], vec.v2(x, y) * 32, rl.WHITE)
                         end
                     end

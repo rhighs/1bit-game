@@ -7,6 +7,7 @@ local level_loader = require "level_loader"
 local start_screen_controller = require "start-screen-controller"
 local level_scene = require "level-scene"
 local physics = require("physics")
+local game_over = require "game-over-scene"
 
 local VP_WIDTH, VP_HEIGHT = 800, 450
 local VP = vec.v2(VP_WIDTH, VP_HEIGHT)
@@ -18,7 +19,8 @@ rl.SetTargetFPS(60)
 local scenes = {
     list = {
         ["start"] = start_screen_controller.new(),
-        ["level"] = level_scene.new()
+        ["level"] = level_scene.new(),
+        ["gameover"] = game_over.new()
     },
     cur = "start",
 

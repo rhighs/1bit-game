@@ -64,4 +64,11 @@ function util.sign(x)
         or 0
 end
 
+function join_arrays(t, u)
+    for _, v in ipairs(u) do
+        table.insert(t, v)
+    end
+    return t
+end
+
 return util

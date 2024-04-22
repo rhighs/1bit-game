@@ -79,21 +79,21 @@ function loader.load_level(data)
     local decor = read_tiles(find_layer(data, "decor"))
 
     local enemies = {}
-    -- local enemies_data = read_tiles(find_layer(data, "entities"))
-    -- local enemy_tileset = find_tileset(data, "entities")
-    -- for y, row in pairs(enemies_data) do
-    --     for x, id in pairs(row) do
-    --         if id ~= nil then
-    --             table.insert(enemies, {
-    --                 pos = vec.v2(x, y) * 32,
-    --                 enemy_id = id - enemy_tileset.firstgid
-    --             })
-    --         end
-    --     end
-    -- end
+    local enemies_data = read_tiles(find_layer(data, "entities"))
+    local enemy_tileset = find_tileset(data, "entities")
+    for y, row in pairs(enemies_data) do
+        for x, id in pairs(row) do
+            if id ~= nil then
+                table.insert(enemies, {
+                    pos = vec.v2(x, y) * 32,
+                    enemy_id = id.gid - enemy_tileset.firstgid
+                })
+            end
+        end
+    end
 
-    -- local level_start = table.find(enemies, function (v) return v.enemy_id == 1 end)
-    -- local level_end = table.find(enemies, function (v) return v.enemy_id == 2 end)
+    local level_start = table.find(enemies, function (v) return v.enemy_id == 1 end)
+    local level_end = table.find(enemies, function (v) return v.enemy_id == 2 end)
 
     return {
         ground = ground,

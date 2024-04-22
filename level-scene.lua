@@ -1,7 +1,7 @@
 local consts = require "consts"
 local util = require "util"
 local player_lib = require "player"
-local level_loader = require "level_loader"
+local loader = require "loader"
 local camera = require "camera"
 local color = require "color"
 local vec = require "vec"
@@ -45,7 +45,7 @@ function level_scene.new()
         init = function (self, data)
             self.do_game_over = false
             self.do_level_completed = false
-            self.data = level_loader.load(require(data.level))
+            self.data = loader.load_level(require(data.level))
             self.player = player_lib.new(self.data.level_start)
             self.level_bounds = make_level_bounds(self.data.level_bounds)
             self.physics_bodies = {
@@ -112,19 +112,32 @@ function level_scene.new()
             self.do_game_over = true
         end,
 
+        draw_tile = function (self, grid, x, y)
+            local tile_info = grid[y][x]
+            if tile_info == nil then
+                return
+            end
+            local texture = self.data.textures[tile_info.gid]
+            if texture == nil then
+                error(util.pystr("trying to draw tex id ", id, "at pos ", x, y))
+            end
+            util.pyprint(tile_info)
+            rl.DrawTextureRec(
+                texture,
+                util.Rec(0, 0, texture.width  * tile_info.flip_horz,
+                               texture.height * tile_info.flip_vert),
+                vec.v2(x, y) * 32,
+                rl.WHITE
+            )
+        end,
+
         draw_simple_grid = function (self, grid)
             local tl = vec.floor(self.cam:top_left_world_pos() / 32)
             local br = vec.floor(self.cam:bottom_right_world_pos() / 32)
             for y = tl.y, br.y do
                 if grid[y] ~= nil then
                     for x = tl.x, br.x do
-                        id = grid[y][x]
-                        if id ~= nil and id ~= 0 then
-                            if self.data.textures[id] == nil then
-                                error(util.pystr("trying to draw tex id ", id, "at pos ", x, y))
-                            end
-                            rl.DrawTextureV(self.data.textures[id], vec.v2(x, y) * 32, rl.WHITE)
-                        end
+                        self:draw_tile(grid, x, y)
                     end
                 end
             end

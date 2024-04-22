@@ -11,7 +11,7 @@ local PLAYER_JUMP_HEIGHT = physics.METER_UNIT * 3
 
 function player.new(player_position)
     local obj = {
-        speed = 32 * 10,
+        speed = physics.METER_UNIT * 10,
         body = physics.new_circle(player_position, PLAYER_BODY_RADIUS, PLAYER_BODY_DENSITY)
     }
 

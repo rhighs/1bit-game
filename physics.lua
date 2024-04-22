@@ -66,7 +66,7 @@ end
 
 function is_grounded(position, static_bodies)
     local current_tile = vec.floor(position / 32)
-    local result = util.table_contains(
+    local result = table.contains(
         static_bodies,
         function(tile) return tile.x == current_tile.x and tile.y == (current_tile.y + 1) end
     )

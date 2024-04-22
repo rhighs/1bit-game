@@ -1,5 +1,6 @@
 local timer = require "timer"
-local game_over = {}
+
+local level_completed = {}
 
 local scene = {}
 
@@ -12,17 +13,17 @@ function scene:update(dt)
 end
 
 function scene:draw()
-    local width = rl.MeasureText("game over.", 32)
-    rl.DrawText("game over.", 800/2 - width/2, 450/2 - 32/2, 32, rl.WHITE)
+    local width = rl.MeasureText("level completed!", 32)
+    rl.DrawText("level completed!", 800/2 - width/2, 450/2 - 32/2, 32, rl.WHITE)
 end
 
 function scene:should_change()
     return self.timer:done() and { name = "start" } or nil
 end
 
-function game_over.new(duration_secs)
+function level_completed.new(duration_secs)
     scene.__index = scene
     return setmetatable({ timer = timer.new(duration_secs) }, scene)
 end
 
-return game_over
+return level_completed

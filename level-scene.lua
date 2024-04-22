@@ -7,7 +7,7 @@ local color = require "color"
 local vec = require "vec"
 local physics = require "physics"
 local ghost = require "ghost"
-local level_exit = require "level-exit"
+local interactable = require "interactable-entity"
 local start_screen = require "start-screen-controller"
 
 local level_scene = {}
@@ -37,11 +37,14 @@ function level_scene.new()
         last_color_swap = 0.0,
         level_bounds = nil,
         do_game_over = false,
+        do_level_completed = false,
 
         enemies = {},
+        interactables = {},
 
         init = function (self, data)
             self.do_game_over = false
+            self.do_level_completed = false
             self.data = level_loader.load(require(data.level))
             self.player = player_lib.new(self.data.level_start)
             self.level_bounds = make_level_bounds(self.data.level_bounds)
@@ -52,19 +55,21 @@ function level_scene.new()
                 if e.enemy_id == 0 then
                     table.insert(self.enemies, ghost.new(e.pos))
                 elseif e.enemy_id == 1 then
-                    table.insert(self.enemies, level_exit.new(e.pos, "assets/level_start.png"))
+                    table.insert(self.enemies, interactable.new(e.pos, "assets/level_start.png", nil))
                 elseif e.enemy_id == 2 then
-                    table.insert(self.enemies, level_exit.new(e.pos, "assets/level_end.png"))
+                    local level_end = interactable.new(e.pos, "assets/level_end.png", function()
+                        self.do_level_completed = true
+                    end)
+                    table.insert(self.enemies, level_end)
+                    table.insert(self.interactables, level_end)
                 end
                 -- add more enemies here
             end
         end,
 
         update = function(self, dt)
-            if not self:check_bounds() then
-                self:game_over()
-                return
-            end
+            self:check_game_over()
+            self:check_interactions()
 
             self.cam:debug_move()
             self.last_color_swap = self.last_color_swap + rl.GetFrameTime()
@@ -82,8 +87,25 @@ function level_scene.new()
             end
         end,
 
-        check_bounds = function (self)
-            return rl.CheckCollisionCircleRec(self.player:position(), self.player.body.radius, self.level_bounds)
+        check_interactions = function (self)
+            if rl.IsKeyDown(rl.KEY_E) then
+                for k, v in pairs(self.interactables) do
+                    if v.interact ~= nil and v.bounds ~= nil and self:check_bounds(v.bounds) then
+                        v:interact()
+                    end
+                end
+            end
+        end,
+
+        check_game_over = function (self)
+            if not self:check_bounds(self.level_bounds) then
+                self:game_over()
+                return
+            end
+        end,
+
+        check_bounds = function (self, bounds)
+            return rl.CheckCollisionCircleRec(self.player:position(), self.player.body.radius, bounds)
         end,
 
         game_over = function (self)
@@ -112,6 +134,12 @@ function level_scene.new()
             rl.ClearBackground(self.bg_color)
             rl.BeginMode2D(self.cam:get())
 
+            for k, v in pairs(self.interactables) do
+                if v.show_interaction ~= nil and v.bounds ~= nil and self:check_bounds(v.bounds) then
+                    v:show_interaction("[E] interact")
+                end
+            end
+
             -- debug draw level bounds
             rl.DrawRectangleLines(self.level_bounds.x, self.level_bounds.y, self.level_bounds.width, self.level_bounds.height, rl.RED)
 
@@ -129,7 +157,12 @@ function level_scene.new()
         end,
 
         should_change = function (self)
-            return self.do_game_over and { name = "gameover" } or nil
+            if self.do_game_over then
+                return { name = "gameover" }
+            elseif self.do_level_completed then
+                return { name = "levelcompleted" }
+            end
+            return nil
         end
     }
 end

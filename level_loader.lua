@@ -55,7 +55,7 @@ function read_layer_data(layer)
 end
 
 function compute_bounds(ground)
-    local vecs = util.table_flatten(util.table_map(ground, function (row, y) 
+    local vecs = table.flatten(table.map(ground, function (row, y) 
         local result = {}
         for x, v in pairs(row) do
             if v ~= nil and v ~= 0 then
@@ -65,8 +65,8 @@ function compute_bounds(ground)
         return result
     end))
 
-    local xs = util.table_map(vecs, function (v) return v.x end)
-    local ys = util.table_map(vecs, function (v) return v.y end)
+    local xs = table.map(vecs, function (v) return v.x end)
+    local ys = table.map(vecs, function (v) return v.y end)
     local position = vec.v2(math.min(unpack(xs)), math.min(unpack(ys)))
     local width, height = math.max(unpack(xs)) - position.x, math.max(unpack(ys)) - position.y
     return util.Rec(position.x, position.y, width, height)
@@ -90,8 +90,8 @@ function level_loader.load(data)
         end
     end
 
-    local level_start = util.table_find(enemies, function (v) return v.enemy_id == 1 end)
-    local level_end = util.table_find(enemies, function (v) return v.enemy_id == 2 end)
+    local level_start = table.find(enemies, function (v) return v.enemy_id == 1 end)
+    local level_end = table.find(enemies, function (v) return v.enemy_id == 2 end)
 
     local textures = load_textures(data)
     return {

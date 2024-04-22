@@ -7,11 +7,11 @@ local entity = {}
 
 function entity:update(dt)
     local old_pos = self.pos
-    self.pos = vec.v2(
-        self.start_pos.x + math.cos(self.n/60) * 100,
-        self.start_pos.y + math.sin(self.n/15) * 20
+    self.pos = self.start_pos + vec.v2(
+        math.cos(self.n/60) * 100,
+        math.sin(self.n/15) * 20
     )
-    self.n = self.n + 1
+    self.n = self.n + dt * 50
     self.dir = (self.pos.x - old_pos.x < 0) and -1 or 1
 end
 

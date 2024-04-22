@@ -147,7 +147,7 @@ function level_scene.new()
             self:draw_simple_grid(self.data.decor)
 
             for _, e in ipairs(self.enemies) do
-                if self.cam:is_inside(e.pos) then
+                if self.cam:is_inside(e:get_draw_box()) then
                     e:draw()
                 end
             end

@@ -10,7 +10,7 @@ local level_completed = require "level-completed-scene"
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
-rl.SetTargetFPS(60)
+rl.SetTargetFPS(165)
 
 local scenes = {
     list = {

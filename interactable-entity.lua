@@ -32,6 +32,13 @@ function entity:interact()
     end
 end
 
+function entity:get_draw_box()
+    return util.Rec(
+        self.pos.x, self.pos.y - self.texture.height,
+        self.texture.width, self.texture.height
+    )
+end
+
 function interactable.new(pos, texture, on_interaction)
     entity.__index = entity
     local tex = rl.LoadTexture(texture)

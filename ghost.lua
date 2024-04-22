@@ -15,8 +15,17 @@ function entity:update(dt)
     self.dir = (self.pos.x - old_pos.x < 0) and -1 or 1
 end
 
+function entity:current_texture()
+    return self.dir == -1 and self.left or self.right
+end
+
 function entity:draw()
-    rl.DrawTextureV(self.dir == -1 and self.left or self.right, self.pos, rl.WHITE)
+    rl.DrawTextureV(self:current_texture(), self.pos, rl.WHITE)
+end
+
+function entity:get_draw_box()
+    local tex = self:current_texture()
+    return util.Rec(self.pos.x, self.pos.y - tex.height, tex.width, tex.height)
 end
 
 function ghost.new(spawn_pos)

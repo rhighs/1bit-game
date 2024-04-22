@@ -38,10 +38,12 @@ function camera.new(screen_size, start_pos)
             end
         end,
 
-        is_inside = function (self, v)
-            u = rl.GetWorldToScreen2D(v, self.camera)
-            return u.x >= 0 and u.x <= self.screen_size.x
-               and u.y >= 0 and u.y <= self.screen_size.y
+        is_inside = function (self, draw_box)
+            u = rl.GetWorldToScreen2D(vec.v2(draw_box.x, draw_box.y), self.camera)
+            return rl.CheckCollisionRecs(
+                util.Rec(0, 0, screen_size.x, screen_size.y),
+                util.Rec(u.x, u.y, draw_box.width, draw_box.height)
+            )
         end,
     }
 end

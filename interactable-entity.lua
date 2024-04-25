@@ -12,7 +12,8 @@ function entity:update(dt)
 end
 
 function entity:draw()
-    rl.DrawTextureV(self.texture, self.pos, rl.WHITE)
+    self:show_interaction("[E] interact")
+    rl.DrawRectangleRec(self.bounds, rl.WHITE)
 end
 
 function entity:show_interaction(message)
@@ -25,29 +26,29 @@ function entity:show_interaction(message)
     )
 end
 
-function entity:interact()
-    if rl.IsKeyDown(rl.KEY_E) and self.last_interaction > INTERACTION_WAIT then
-        self.on_interaction()
-        self.last_interaction = 0.0
-    end
-end
-
 function entity:get_draw_box()
-    return util.Rec(
-        self.pos.x, self.pos.y - self.texture.height,
-        self.texture.width, self.texture.height
-    )
+    return self.bounds
 end
 
-function interactable.new(pos, texture, on_interaction)
+function entity:get_hitbox()
+    return self.bounds
+end
+
+function entity:player_collision(pos)
+    if rl.IsKeyDown(rl.KEY_E) then
+        self.last_interaction = 0.0
+        return self.on_interaction()
+    end
+    return nil
+end
+
+function interactable.new(pos, width, height, on_interaction)
     entity.__index = entity
-    local tex = rl.LoadTexture(texture)
-    local pos = vec.v2(pos.x, pos.y - ((tex.height / 32 - 1) * 32))
-    local bounds = util.Rec(pos.x, pos.y, tex.width, tex.height)
+    local pos = vec.v2(pos.x, pos.y)
+    local bounds = util.Rec(pos.x, pos.y, width, height)
     return setmetatable({
         pos = pos,
         bounds = bounds,
-        texture = tex,
 
         on_interaction = on_interaction,
         last_interaction = INTERACTION_WAIT * 2,

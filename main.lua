@@ -12,7 +12,7 @@ local player = require "player"
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
 rl.SetTargetFPS(165)
-
+entity.load_textures()
 player.load_textures()
 
 local scenes = {

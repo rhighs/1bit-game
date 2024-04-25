@@ -6,9 +6,8 @@ local camera = require "camera"
 local color = require "color"
 local vec = require "vec"
 local physics = require "physics"
-local ghost = require "ghost"
-local interactable = require "interactable-entity"
 local start_screen = require "start-screen-controller"
+local entity = require "entity"
 
 local level_scene = {}
 
@@ -22,7 +21,7 @@ function make_level_bounds(layer_bounds)
         layer_bounds.x - level_scene.LEVEL_BOUNDS_PADDING,
         layer_bounds.y - level_scene.LEVEL_BOUNDS_PADDING,
         layer_bounds.width + (level_scene.LEVEL_BOUNDS_PADDING * 2),
-        layer_bounds.height + (level_scene.LEVEL_BOUNDS_PADDING * 2) 
+        layer_bounds.height + (level_scene.LEVEL_BOUNDS_PADDING * 2)
     )
 end
 
@@ -51,27 +50,14 @@ function level_scene.new()
             self.physics_bodies = {
                 self.player.body,
             }
-            for _, e in ipairs(self.data.enemies) do
-                if e.enemy_id == 0 then
-                    table.insert(self.enemies, ghost.new(e.pos))
-                elseif e.enemy_id == 1 then
-                    table.insert(self.enemies, interactable.new(e.pos, "assets/level_start.png", nil))
-                elseif e.enemy_id == 2 then
-                    local level_end = interactable.new(e.pos, "assets/level_end.png", function()
-                        self.do_level_completed = true
-                    end)
-                    table.insert(self.enemies, level_end)
-                    table.insert(self.interactables, level_end)
-                end
-                -- add more enemies here
+            for _, e in ipairs(self.data.entities) do
+                table.insert(self.enemies, entity.create(e))
             end
         end,
 
         update = function(self, dt)
             self:check_game_over()
-            self:check_interactions()
 
-            self.cam:debug_move()
             self.last_color_swap = self.last_color_swap + rl.GetFrameTime()
             if rl.IsKeyDown(rl.KEY_T) and self.last_color_swap > 0.2 then
                 self.bg_color = self.bg_color == rl.WHITE and rl.BLACK or rl.WHITE
@@ -84,14 +70,10 @@ function level_scene.new()
 
             for _, e in ipairs(self.enemies) do
                 e:update(dt)
-            end
-        end,
-
-        check_interactions = function (self)
-            if rl.IsKeyDown(rl.KEY_E) then
-                for k, v in pairs(self.interactables) do
-                    if v.interact ~= nil and v.bounds ~= nil and self:check_bounds(v.bounds) then
-                        v:interact()
+                if self:check_bounds(e:get_hitbox()) then
+                    local res = e:player_collision(self.player:position())
+                    if res == "game-over" then
+                        self.do_game_over = true
                     end
                 end
             end
@@ -119,7 +101,7 @@ function level_scene.new()
             end
             local texture = self.data.textures[tile_info.gid]
             if texture == nil then
-                error(util.pystr("trying to draw tex id ", id, "at pos ", x, y))
+                error(util.pystr("trying to draw tex id =", tile_info.gid, "at pos = (", x, y, ")"))
             end
             rl.DrawTextureRec(
                 texture,
@@ -145,12 +127,6 @@ function level_scene.new()
         draw = function (self)
             rl.ClearBackground(self.bg_color)
             rl.BeginMode2D(self.cam:get())
-
-            for k, v in pairs(self.interactables) do
-                if v.show_interaction ~= nil and v.bounds ~= nil and self:check_bounds(v.bounds) then
-                    v:show_interaction("[E] interact")
-                end
-            end
 
             -- debug draw level bounds
             rl.DrawRectangleLines(self.level_bounds.x, self.level_bounds.y, self.level_bounds.width, self.level_bounds.height, rl.RED)

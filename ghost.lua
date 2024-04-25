@@ -28,6 +28,14 @@ function entity:get_draw_box()
     return util.Rec(self.pos.x, self.pos.y - tex.height, tex.width, tex.height)
 end
 
+function entity:get_hitbox()
+    return util.Rec(self.pos.x, self.pos.y, 32, 32)
+end
+
+function entity:player_collision(pos)
+    return "game-over"
+end
+
 function ghost.new(spawn_pos)
     entity.__index = entity
     return setmetatable({

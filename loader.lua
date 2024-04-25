@@ -3,7 +3,7 @@ loader = {}
 local util = require "util"
 local vec = require "vec"
 
-function find_layer(data, name)
+function loader.find_layer(data, name)
     for _, l in ipairs(data.layers) do
         if l.name == name then
             return l
@@ -55,6 +55,19 @@ function read_tiles(layer)
     return data
 end
 
+function read_objects(layer)
+    local objs = {}
+    for k, v in ipairs(layer.objects) do
+        table.insert(objs, {
+            pos = vec.v2(v.x, v.y),
+            enemy_id = v.type,
+            width = v.width,
+            height = v.height
+        })
+    end
+    return objs
+end
+
 function compute_bounds(ground)
     local vecs = table.flatten(table.map(ground, function (row, y)
         local result = {}
@@ -75,32 +88,21 @@ end
 
 function loader.load_level(data)
     local textures = load_textures(data, { "ground", "decors" })
-    local ground = read_tiles(find_layer(data, "ground"))
-    local decor = read_tiles(find_layer(data, "decor"))
+    local ground = read_tiles(loader.find_layer(data, "ground"))
+    local decor = read_tiles(loader.find_layer(data, "decor"))
+    local entities = read_objects(loader.find_layer(data, "entities"))
 
-    local enemies = {}
-    local enemies_data = read_tiles(find_layer(data, "entities"))
-    local enemy_tileset = find_tileset(data, "entities")
-    for y, row in pairs(enemies_data) do
-        for x, id in pairs(row) do
-            if id ~= nil then
-                table.insert(enemies, {
-                    pos = vec.v2(x, y) * 32,
-                    enemy_id = id.gid - enemy_tileset.firstgid
-                })
-            end
-        end
+    local level_start_obj = loader.find_layer(data, "level-start").objects[1]
+    if level_start_obj == nil then
+        error("no level start object are defined for this level!")
     end
-
-    local level_start = table.find(enemies, function (v) return v.enemy_id == 1 end)
-    local level_end = table.find(enemies, function (v) return v.enemy_id == 2 end)
+    local level_start = vec.v2(level_start_obj.x, level_start_obj.y)
 
     return {
         ground = ground,
         level_bounds = compute_bounds(ground),
-        level_start = vec.v2(128, 352), -- level_start.pos,
-        -- level_end = vec.v2(0, 0), -- level_end.pos,
-        enemies = enemies,
+        level_start = level_start,
+        entities = entities,
         decor = decor,
         textures = textures
     }

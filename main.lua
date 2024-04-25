@@ -8,6 +8,7 @@ local level_scene = require "level-scene"
 local game_over = require "game-over-scene"
 local level_completed = require "level-completed-scene"
 local player = require "player"
+local entity = require "entity"
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")

@@ -121,7 +121,6 @@ function level_scene.new()
             if texture == nil then
                 error(util.pystr("trying to draw tex id ", id, "at pos ", x, y))
             end
-            util.pyprint(tile_info)
             rl.DrawTextureRec(
                 texture,
                 util.Rec(0, 0, texture.width  * tile_info.flip_horz,

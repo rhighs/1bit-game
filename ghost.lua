@@ -2,6 +2,7 @@ local ghost = {}
 
 local util = require "util"
 local vec = require "vec"
+local textures = require "textures"
 
 local entity = {}
 
@@ -12,20 +13,20 @@ function entity:update(dt)
         math.sin(self.n/15) * 20
     )
     self.n = self.n + dt * 50
-    self.dir = (self.pos.x - old_pos.x < 0) and -1 or 1
-end
-
-function entity:current_texture()
-    return self.dir == -1 and self.left or self.right
+    self.dir = (self.pos.x - old_pos.x < 0) and 1 or -1
 end
 
 function entity:draw()
-    rl.DrawTextureV(self:current_texture(), self.pos, rl.WHITE)
+    rl.DrawTextureRec(
+        textures.ghost,
+        util.Rec(0, 0, 32 * self.dir, 32),
+        self.pos,
+        rl.WHITE
+    )
 end
 
 function entity:get_draw_box()
-    local tex = self:current_texture()
-    return util.Rec(self.pos.x, self.pos.y, tex.width, tex.height)
+    return util.Rec(self.pos.x, self.pos.y, 32, 32)
 end
 
 function entity:get_hitbox()
@@ -43,8 +44,6 @@ function ghost.new(spawn_pos)
         pos = spawn_pos - vec.v2(0, 32),
         n = 0,
         dir = -1,
-        left = rl.LoadTexture("assets/ghost.png"),
-        right = rl.LoadTexture("assets/ghost-right.png")
     }, entity)
 end
 

@@ -7,7 +7,8 @@ local color = require "color"
 local vec = require "vec"
 local physics = require "physics"
 local start_screen = require "start-screen-controller"
-local entity = require "entity"
+local ghost = require "ghost"
+local interactable = require "interactable-entity"
 
 local level_scene = {}
 
@@ -23,6 +24,18 @@ function make_level_bounds(layer_bounds)
         layer_bounds.width + (level_scene.LEVEL_BOUNDS_PADDING * 2),
         layer_bounds.height + (level_scene.LEVEL_BOUNDS_PADDING * 2)
     )
+end
+
+function create_entity(data)
+    if data.enemy_id == "ghost" then
+        return ghost.new(data.pos)
+    elseif data.enemy_id == "level-end" then
+        return interactable.new(data.pos, data.width, data.height, function()
+            return "level-completed"
+        end)
+    end
+    error(util.pystr("unknown entity: ", data))
+    -- add more entities here
 end
 
 function level_scene.new()
@@ -52,7 +65,7 @@ function level_scene.new()
             }
             self.enemies = {}
             for _, e in ipairs(self.data.entities) do
-                table.insert(self.enemies, entity.create(e))
+                table.insert(self.enemies, create_entity(e))
             end
         end,
 

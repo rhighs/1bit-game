@@ -39,10 +39,10 @@ function physics.new_circle(pos, r, density)
         end,
 
         update = function(self, dt)
-            self:position_update(dt)
             if self.grounded and self.velocity.y >= 0 then
                 self.velocity.y = 0
             end
+            self:position_update(dt)
         end,
 
         apply_force = function(self, force) self.force = self.force + force end,
@@ -64,19 +64,37 @@ function occupied_tiles(position, radius)
     }
 end
 
-function is_grounded(position, static_bodies)
-    local current_tile = vec.floor(position / 32)
-    local result = table.contains(
-        static_bodies,
-        function(tile) return tile.x == current_tile.x and tile.y == (current_tile.y + 1) end
-    )
-    return result
+function resolve_body_collisions(body, static_bodies)
+    local ct = vec.floor(body.position / 32)
+
+    local ground_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y + 1) end)
+    body.grounded = ground_tile ~= nil
+    if body.grounded then
+        body.position.y = (ground_tile.y * 32) - body.radius
+    end
+
+    local top_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y - 1) end)
+    if top_tile ~= nil then
+        body.position.y = (top_tile.y * 32 + 32) + body.radius
+        body.velocity.y = 0
+    end
+
+    local left_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x - 1) and tile.y == ct.y end)
+    if left_tile ~= nil then
+        body.position.x = (left_tile.x * 32 + 32) + body.radius
+        body.velocity.x = 0
+    end
+
+    local right_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x + 1) and tile.y == ct.y end)
+    if right_tile ~= nil then
+        body.position.x = (right_tile.x * 32) - body.radius
+        body.velocity.x = 0
+    end
 end
 
 function physics.update_physics(grid, bodies, dt)
     for i, body in ipairs(bodies) do
-        body.gravity = physics.GRAVITY 
-
+        body.gravity = physics.GRAVITY
         local old_position = body.position
         body:update(dt)
         local new_position = body.position
@@ -91,10 +109,7 @@ function physics.update_physics(grid, bodies, dt)
             end
         end
 
-        body.grounded = is_grounded(body.position, static_bodies)
-        if body.grounded then
-            body.position.y = old_position.y
-        end
+        resolve_body_collisions(body, static_bodies)
     end
 
     for i, first_body in ipairs(bodies) do

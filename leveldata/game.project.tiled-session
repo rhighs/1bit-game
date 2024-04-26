@@ -13,7 +13,7 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
-        "/home/chrg/Programming/projects/1bit-game/level1.tmx": {
+        "C:/home/chrg/Programming/projects/1bit-game/level1.tmx": {
             "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
@@ -21,7 +21,7 @@
                 "y": 361
             }
         },
-        "/home/chrg/Programming/projects/1bit-game/level2.tmx": {
+        "C:/home/chrg/Programming/projects/1bit-game/level2.tmx": {
             "scale": 1,
             "selectedLayer": 0,
             "viewCenter": {
@@ -29,17 +29,17 @@
                 "y": 199
             }
         },
-        "/home/chrg/Programming/projects/1bit-game/mine.tsx": {
+        "C:/home/chrg/Programming/projects/1bit-game/mine.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
-        "/home/chrg/Programming/projects/1bit-game/random_tileset.tsx": {
+        "C:/home/chrg/Programming/projects/1bit-game/random_tileset.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 5.5
         },
-        "/home/chrg/idk.tsx": {
+        "C:/home/chrg/idk.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 1
@@ -68,11 +68,11 @@
             }
         },
         "level3.tmx": {
-            "scale": 1.5,
-            "selectedLayer": 2,
+            "scale": 1,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 268.66666666666663,
-                "y": 461.66666666666663
+                "x": 493,
+                "y": 67
             }
         },
         "level3.tmx#entities": {

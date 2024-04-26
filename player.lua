@@ -10,7 +10,7 @@ local player = {}
 local PLAYER_SPEED = 2
 local PLAYER_BODY_DENSITY = 1
 local PLAYER_BODY_RADIUS = 10
-local PLAYER_JUMP_HEIGHT = physics.METER_UNIT * 3
+local PLAYER_JUMP_HEIGHT = physics.METER_UNIT * 3.5
 
 local PLAYER_STATE_IDLE = 0
 local PLAYER_STATE_RUNNING = 1

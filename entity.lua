@@ -1,5 +1,3 @@
-local util = require "util"
-
 local entity = {}
 
 local util = require "util"
@@ -24,7 +22,7 @@ function entity.create(data)
         return ghost.new(data.pos)
     elseif data.enemy_id == "level-end" then
         return interactable.new(data.pos, data.width, data.height, function()
-            return "game-over"
+            return "level-completed"
         end)
     end
     error(util.pystr("unknown entity: ", data))

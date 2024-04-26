@@ -1,7 +1,7 @@
-local util = require 'util'
-local vec = require "vec"
-
 local ghost = {}
+
+local util = require "util"
+local vec = require "vec"
 
 local entity = {}
 
@@ -25,7 +25,7 @@ end
 
 function entity:get_draw_box()
     local tex = self:current_texture()
-    return util.Rec(self.pos.x, self.pos.y - tex.height, tex.width, tex.height)
+    return util.Rec(self.pos.x, self.pos.y, tex.width, tex.height)
 end
 
 function entity:get_hitbox()
@@ -40,7 +40,7 @@ function ghost.new(spawn_pos)
     entity.__index = entity
     return setmetatable({
         start_pos = spawn_pos,
-        pos = spawn_pos,
+        pos = spawn_pos - vec.v2(0, 32),
         n = 0,
         dir = -1,
         left = rl.LoadTexture("assets/ghost.png"),

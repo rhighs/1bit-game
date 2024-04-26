@@ -50,6 +50,7 @@ function level_scene.new()
             self.physics_bodies = {
                 self.player.body,
             }
+            self.enemies = {}
             for _, e in ipairs(self.data.entities) do
                 table.insert(self.enemies, entity.create(e))
             end
@@ -74,6 +75,8 @@ function level_scene.new()
                     local res = e:player_collision(self.player:position())
                     if res == "game-over" then
                         self.do_game_over = true
+                    elseif res == "level-completed" then
+                        self.do_level_completed = true
                     end
                 end
             end
@@ -94,7 +97,7 @@ function level_scene.new()
             self.do_game_over = true
         end,
 
-        draw_tile = function (self, grid, x, y)
+        draw_at = function (self, grid, x, y)
             local tile_info = grid[y][x]
             if tile_info == nil then
                 return
@@ -103,22 +106,24 @@ function level_scene.new()
             if texture == nil then
                 error(util.pystr("trying to draw tex id =", tile_info.gid, "at pos = (", x, y, ")"))
             end
+            local y_offset = texture.height / 32 - 1
             rl.DrawTextureRec(
                 texture,
                 util.Rec(0, 0, texture.width  * tile_info.flip_horz,
                                texture.height * tile_info.flip_vert),
-                vec.v2(x, y) * 32,
+                vec.v2(x, y - y_offset) * 32,
                 rl.WHITE
             )
         end,
 
         draw_simple_grid = function (self, grid)
-            local tl = vec.floor(self.cam:top_left_world_pos() / 32)
-            local br = vec.floor(self.cam:bottom_right_world_pos() / 32)
+            -- draw two tiles over the screen bounds to permit 96x96 tiles
+            local tl = vec.floor(self.cam:top_left_world_pos() / 32) - vec.v2(2, 2)
+            local br = vec.floor(self.cam:bottom_right_world_pos() / 32) + vec.v2(2, 2)
             for y = tl.y, br.y do
                 if grid[y] ~= nil then
                     for x = tl.x, br.x do
-                        self:draw_tile(grid, x, y)
+                        self:draw_at(grid, x, y)
                     end
                 end
             end

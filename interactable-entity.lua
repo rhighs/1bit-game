@@ -12,18 +12,15 @@ function entity:update(dt)
 end
 
 function entity:draw()
-    self:show_interaction("[E] interact")
-    rl.DrawRectangleRec(self.bounds, rl.WHITE)
-end
-
-function entity:show_interaction(message)
-    local width = rl.MeasureText(message, 24)
-    rl.DrawText(message,
-        (self.bounds.x + self.bounds.width/2) - width/2,
-        (self.bounds.y - 20) - 32/2,
-        24,
-        rl.WHITE
-    )
+    if self.player_inside then
+        local width = rl.MeasureText(self.message, 24)
+        rl.DrawText(self.message,
+            (self.bounds.x + self.bounds.width/2) - width/2,
+            (self.bounds.y - 20) - 32/2,
+            24,
+            rl.WHITE
+        )
+    end
 end
 
 function entity:get_draw_box()
@@ -35,6 +32,7 @@ function entity:get_hitbox()
 end
 
 function entity:player_collision(pos)
+    self.player_inside = true
     if rl.IsKeyDown(rl.KEY_E) then
         self.last_interaction = 0.0
         return self.on_interaction()
@@ -52,6 +50,8 @@ function interactable.new(pos, width, height, on_interaction)
 
         on_interaction = on_interaction,
         last_interaction = INTERACTION_WAIT * 2,
+        message = "[E] interact",
+        player_inside = false
     }, entity)
 end
 

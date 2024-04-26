@@ -38,16 +38,16 @@ end
 function read_tiles(layer)
     local data = {}
     for y = 1, layer.height do
-        if data[y] == nil then
-            data[y] = {}
+        if data[y-1] == nil then
+            data[y-1] = {}
         end
         for x = 1, layer.width do
             local id = layer.data[(y - 1) * layer.width + x]
             if id ~= nil and id ~= 0 then
-                data[y][x] = {
+                data[y-1][x-1] = {
                     flip_horz = bit.band(id, 0x80000000) == 0 and 1 or -1,
                     flip_vert = bit.band(id, 0x40000000) == 0 and 1 or -1,
-                    gid  = bit.band(id, 0xfffffff),
+                    gid = bit.band(id, 0xfffffff),
                 }
             end
         end

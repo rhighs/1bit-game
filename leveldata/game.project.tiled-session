@@ -68,11 +68,11 @@
             }
         },
         "level3.tmx": {
-            "scale": 2,
-            "selectedLayer": 1,
+            "scale": 1.5,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 559.5,
-                "y": 431.5
+                "x": 268.66666666666663,
+                "y": 461.66666666666663
             }
         },
         "level3.tmx#entities": {
@@ -104,8 +104,8 @@
     "project": "game.project.tiled-project",
     "property.type": "string",
     "recentFiles": [
-        "entities.tsx",
         "level3.tmx",
+        "entities.tsx",
         "decors.tsx",
         "enemies.tsx",
         "level2.tmx",

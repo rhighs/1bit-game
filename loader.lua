@@ -60,7 +60,7 @@ function read_objects(layer)
     for k, v in ipairs(layer.objects) do
         table.insert(objs, {
             pos = vec.v2(v.x, v.y),
-            enemy_id = v.type,
+            enemy_id = v.name,
             width = v.width,
             height = v.height
         })

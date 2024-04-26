@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <template>
  <tileset firstgid="1" source="entities.tsx"/>
- <object type="ghost" gid="1" width="32" height="32">
-  <properties>
-   <property name="whaever" type="int" value="5"/>
-  </properties>
- </object>
+ <object name="ghost" gid="1" width="32" height="32"/>
 </template>

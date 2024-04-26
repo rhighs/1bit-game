@@ -3,8 +3,9 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "level3.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
@@ -70,8 +71,8 @@
             "scale": 2,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1552,
-                "y": 400
+                "x": 559.5,
+                "y": 431.5
             }
         },
         "level3.tmx#entities": {
@@ -97,13 +98,15 @@
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": null,
     "openFiles": [
+        "level3.tmx",
+        "entities.tsx"
     ],
     "project": "game.project.tiled-project",
     "property.type": "string",
     "recentFiles": [
+        "entities.tsx",
         "level3.tmx",
         "decors.tsx",
-        "entities.tsx",
         "enemies.tsx",
         "level2.tmx",
         "random_tileset.tsx",

@@ -1,5 +1,7 @@
 local entity = {}
 
+local util = require "util"
+
 -- This file should group information about *all* the entities in the game.
 -- Add here stuff like texture loading, generic entity creation, etc., then
 -- have singular entities reference this file if needed.
@@ -23,6 +25,7 @@ function entity.create(data)
             return "game-over"
         end)
     end
+    error(util.pystr("unknown entity: ", data))
     -- add more entities here
 end
 

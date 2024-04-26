@@ -1,7 +1,8 @@
 return {
-  version = "1.5",
+  version = "1.10",
   luaversion = "5.1",
-  tiledversion = "1.8.2",
+  tiledversion = "1.10.2",
+  class = "",
   orientation = "orthogonal",
   renderorder = "right-down",
   width = 200,
@@ -9,18 +10,21 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 60,
+  nextobjectid = 66,
   properties = {},
   tilesets = {
     {
       name = "ground",
       firstgid = 1,
+      class = "",
       tilewidth = 33,
       tileheight = 32,
       spacing = 0,
       margin = 0,
       columns = 0,
       objectalignment = "unspecified",
+      tilerendersize = "tile",
+      fillmode = "stretch",
       tileoffset = {
         x = 0,
         y = 0
@@ -51,12 +55,15 @@ return {
     {
       name = "decors",
       firstgid = 3,
+      class = "",
       tilewidth = 96,
       tileheight = 96,
       spacing = 0,
       margin = 0,
       columns = 0,
       objectalignment = "unspecified",
+      tilerendersize = "tile",
+      fillmode = "stretch",
       tileoffset = {
         x = 0,
         y = 0
@@ -111,12 +118,15 @@ return {
     {
       name = "entities",
       firstgid = 14,
+      class = "",
       tilewidth = 96,
       tileheight = 96,
       spacing = 0,
       margin = 0,
       columns = 0,
       objectalignment = "unspecified",
+      tilerendersize = "tile",
+      fillmode = "stretch",
       tileoffset = {
         x = 0,
         y = 0
@@ -160,6 +170,7 @@ return {
       height = 50,
       id = 1,
       name = "ground",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -226,6 +237,7 @@ return {
       draworder = "topdown",
       id = 7,
       name = "entities",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -235,25 +247,36 @@ return {
       properties = {},
       objects = {
         {
-          id = 51,
-          name = "",
-          type = "ghost",
+          id = 58,
+          name = "level-end",
+          type = "",
           shape = "rectangle",
-          x = 544,
+          x = 1504,
+          y = 352,
+          width = 96,
+          height = 96,
+          rotation = 0,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 64,
+          name = "ghost",
+          type = "",
+          shape = "rectangle",
+          x = 512,
           y = 416,
           width = 32,
           height = 32,
           rotation = 0,
           gid = 14,
           visible = true,
-          properties = {
-            ["whaever"] = 5
-          }
+          properties = {}
         },
         {
-          id = 53,
-          name = "",
-          type = "ghost",
+          id = 65,
+          name = "ghost",
+          type = "",
           shape = "rectangle",
           x = 640,
           y = 288,
@@ -261,21 +284,6 @@ return {
           height = 32,
           rotation = 0,
           gid = 14,
-          visible = true,
-          properties = {
-            ["whaever"] = 5
-          }
-        },
-        {
-          id = 58,
-          name = "",
-          type = "level-end",
-          shape = "rectangle",
-          x = 1504,
-          y = 352,
-          width = 96,
-          height = 96,
-          rotation = 0,
           visible = true,
           properties = {}
         }
@@ -289,6 +297,7 @@ return {
       height = 50,
       id = 3,
       name = "decor",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -355,6 +364,7 @@ return {
       draworder = "topdown",
       id = 9,
       name = "level-start",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,

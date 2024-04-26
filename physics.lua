@@ -1,7 +1,7 @@
 local util = require 'util'
 local vec = require "vec"
 
-local AIR_RESISTANCE_COEFF = 1
+local AIR_RESISTANCE_COEFF = 5
 
 local physics = {}
 physics.METER_UNIT = 32

@@ -1,3 +1,5 @@
+local util = require "util"
+
 local entity = {}
 
 local util = require "util"

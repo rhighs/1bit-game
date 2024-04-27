@@ -64,11 +64,8 @@ function util.sign(x)
         or 0
 end
 
-function join_arrays(t, u)
-    for _, v in ipairs(u) do
-        table.insert(t, v)
-    end
-    return t
+function util.clamp(x, a, b)
+    return math.max(math.min(b, x), a)
 end
 
 return util

@@ -15,17 +15,6 @@ local level_scene = {}
 function draw_enemies(enemies, textures, camera)
 end
 
-level_scene.LEVEL_BOUNDS_PADDING = 100
-
-function make_level_bounds(layer_bounds)
-    return util.Rec(
-        layer_bounds.x - level_scene.LEVEL_BOUNDS_PADDING,
-        layer_bounds.y - level_scene.LEVEL_BOUNDS_PADDING,
-        layer_bounds.width + (level_scene.LEVEL_BOUNDS_PADDING * 2),
-        layer_bounds.height + (level_scene.LEVEL_BOUNDS_PADDING * 2)
-    )
-end
-
 function create_entity(data)
     if data.enemy_id == "ghost" then
         return ghost.new(data.pos)
@@ -59,7 +48,7 @@ function level_scene.new()
             self.do_level_completed = false
             self.data = loader.load_level(require(data.level))
             self.player = player_lib.new(self.data.level_start)
-            self.level_bounds = make_level_bounds(self.data.level_bounds)
+            self.level_bounds = self.data.level_bounds
             self.physics_bodies = {
                 self.player.body,
             }
@@ -80,7 +69,11 @@ function level_scene.new()
 
             physics.update_physics(self.data.ground, self.physics_bodies, dt)
             self.player:update(dt)
-            self.cam:retarget(self.player:position())
+            self.cam:retarget(vec.v2(
+                util.clamp(self.player:position().x, self.level_bounds.x + consts.VP.x/2, self.level_bounds.x + self.level_bounds.width - consts.VP.x/2),
+                util.clamp(self.player:position().y, self.level_bounds.y + consts.VP.y/2, self.level_bounds.y + self.level_bounds.height - consts.VP.y/2)
+            ))
+            -- self.cam:retarget(self.player:position())
 
             for _, e in ipairs(self.enemies) do
                 e:update(dt)
@@ -145,9 +138,6 @@ function level_scene.new()
         draw = function (self)
             rl.ClearBackground(self.bg_color)
             rl.BeginMode2D(self.cam:get())
-
-            -- debug draw level bounds
-            rl.DrawRectangleLines(self.level_bounds.x, self.level_bounds.y, self.level_bounds.width, self.level_bounds.height, rl.RED)
 
             self:draw_simple_grid(self.data.ground)
             self:draw_simple_grid(self.data.decor)

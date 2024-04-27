@@ -100,7 +100,7 @@ function loader.load_level(data)
 
     return {
         ground = ground,
-        level_bounds = compute_bounds(ground),
+        level_bounds = util.Rec(0, 0, data.width * 32, data.height * 32),
         level_start = level_start,
         entities = entities,
         decor = decor,

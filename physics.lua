@@ -76,7 +76,9 @@ function resolve_body_collisions(body, static_bodies)
     local top_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y - 1) end)
     if top_tile ~= nil then
         body.position.y = (top_tile.y * 32 + 32) + body.radius
-        body.velocity.y = 0
+        if body.velocity.y < 0 then
+            body.velocity.y = 0 
+        end
     end
 
     local left_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x - 1) and tile.y == ct.y end)

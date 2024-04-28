@@ -9,11 +9,9 @@ local physics = require "physics"
 local start_screen = require "start-screen-controller"
 local ghost = require "ghost"
 local interactable = require "interactable-entity"
+local cooldown = require "cooldown"
 
 local level_scene = {}
-
-function draw_enemies(enemies, textures, camera)
-end
 
 function create_entity(data)
     if data.enemy_id == "ghost" then
@@ -35,7 +33,6 @@ function level_scene.new()
         cam = camera.new(consts.VP, vec.v2(0, 0)),
         physics_bodies = {},
         bg_color = rl.BLACK,
-        last_color_swap = 0.0,
         level_bounds = nil,
         do_game_over = false,
         do_level_completed = false,
@@ -58,13 +55,15 @@ function level_scene.new()
             end
         end,
 
+        color_swap = cooldown.make_cooled(function (self)
+            self.bg_color = self.bg_color == rl.WHITE and rl.BLACK or rl.WHITE
+        end, 0.2),
+
         update = function(self, dt)
             self:check_game_over()
 
-            self.last_color_swap = self.last_color_swap + rl.GetFrameTime()
-            if rl.IsKeyDown(rl.KEY_T) and self.last_color_swap > 0.2 then
-                self.bg_color = self.bg_color == rl.WHITE and rl.BLACK or rl.WHITE
-                self.last_color_swap = 0.0
+            if rl.IsKeyDown(rl.KEY_T) then
+                self:color_swap()
             end
 
             physics.update_physics(self.data.ground, self.physics_bodies, dt)
@@ -145,6 +144,9 @@ function level_scene.new()
             for _, e in ipairs(self.enemies) do
                 if self.cam:is_inside(e:get_draw_box()) then
                     e:draw()
+                    if self.debug_mode then
+                        e:draw_debug()
+                    end
                 end
             end
 

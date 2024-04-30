@@ -62,16 +62,16 @@ function level_scene.new()
         update = function(self, dt)
             self:check_game_over()
 
-            if rl.IsKeyDown(rl.KEY_T) then
-                self:color_swap()
-            end
+            -- if rl.IsKeyDown(rl.KEY_T) then
+            --     self:color_swap()
+            -- end
 
-            physics.update_physics(self.data.ground, self.physics_bodies, dt)
             self.player:update(dt)
             self.cam:retarget(vec.v2(
                 util.clamp(self.player:position().x, self.level_bounds.x + consts.VP.x/2, self.level_bounds.x + self.level_bounds.width - consts.VP.x/2),
                 util.clamp(self.player:position().y, self.level_bounds.y + consts.VP.y/2, self.level_bounds.y + self.level_bounds.height - consts.VP.y/2)
             ))
+            physics.update_physics(self.data.ground, self.physics_bodies, dt)
             -- self.cam:retarget(self.player:position())
 
             for _, e in ipairs(self.enemies) do
@@ -121,6 +121,25 @@ function level_scene.new()
             )
         end,
 
+        draw_hud = function (self, dt)
+           rl.DrawRectangle(0, 0, consts.VP_WIDTH, 50, rl.BLACK)
+
+           -- player torch status
+           local torch_bar_length = consts.VP_WIDTH / 3
+           local text = "TORCH [T] "
+           local text_height = 18
+           local text_width = rl.MeasureText(text, text_height)
+           rl.DrawText(text,
+               10,
+               10,
+               text_height,
+               rl.WHITE
+           )
+           local bar_x = 20 + text_width
+           rl.DrawRectangleLines(bar_x, 10, torch_bar_length, text_height, rl.WHITE)
+           rl.DrawRectangle(bar_x, 10, torch_bar_length * (self.player.torch_battery/100.0), text_height, rl.WHITE)
+        end,
+
         draw_simple_grid = function (self, grid)
             -- draw two tiles over the screen bounds to permit 96x96 tiles
             local tl = vec.floor(self.cam:top_left_world_pos() / 32) - vec.v2(2, 2)
@@ -136,10 +155,11 @@ function level_scene.new()
 
         draw = function (self)
             rl.ClearBackground(self.bg_color)
-            rl.BeginMode2D(self.cam:get())
 
-            self:draw_simple_grid(self.data.ground)
+            rl.BeginMode2D(self.cam:get())
             self:draw_simple_grid(self.data.decor)
+            self.player:draw(dt)
+            self:draw_simple_grid(self.data.ground)
 
             for _, e in ipairs(self.enemies) do
                 if self.cam:is_inside(e:get_draw_box()) then
@@ -149,9 +169,9 @@ function level_scene.new()
                     end
                 end
             end
-
-            self.player:draw(dt)
             rl.EndMode2D()
+
+            self:draw_hud(dt)
         end,
 
         should_change = function (self)

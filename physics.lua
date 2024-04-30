@@ -1,11 +1,10 @@
 local util = require 'util'
 local vec = require "vec"
 
-local AIR_RESISTANCE_COEFF = 5
-
 local physics = {}
 physics.METER_UNIT = 32
 physics.GRAVITY = vec.v2(0, 2 * 9.8 * physics.METER_UNIT)
+physics.AIR_RESISTANCE_COEFF = 2
 
 function physics.new_circle(pos, r, density)
     local obj = {
@@ -13,6 +12,8 @@ function physics.new_circle(pos, r, density)
         position = pos,
         velocity = vec.zero(),
         gravity = physics.GRAVITY,
+        gravity_enabled = true,
+        air_resistance_enabled = true,
         acceleration = vec.zero(),
         force = vec.zero(),
         grounded = false,
@@ -22,16 +23,21 @@ function physics.new_circle(pos, r, density)
         mass = density * (math.pi * math.pow(r, 2)),
 
         position_update = function(self, dt)
-            -- apply air resistance force
-            local speed = vec.length(self.velocity)
-            local opposing_vector = -(math.pow(speed, 2) * vec.normalize(self.velocity))
-            local air_resistance_force = (AIR_RESISTANCE_COEFF * opposing_vector) / 2
-            air_resistance_force.y = 0
-            self:apply_force(air_resistance_force * 10)
+            if self.air_resistance_enabled then
+                local speed = vec.length(self.velocity)
+                local opposing_vector = -(math.pow(speed, 2) * vec.normalize(self.velocity))
+                local air_resistance_force = (physics.AIR_RESISTANCE_COEFF * opposing_vector) / 2
+                air_resistance_force.y = 0
+                self:apply_force(air_resistance_force * 10)
+            end
 
             local acceleration_from_force = (self.force / self.mass)
             -- update positions
-            self.velocity = self.velocity + (self.acceleration * dt) + (self.gravity * dt) + (acceleration_from_force * dt)
+            self.velocity = self.velocity + (self.acceleration * dt) + (acceleration_from_force * dt)
+            if self.gravity_enabled then
+                self.velocity = self.velocity + (self.gravity * dt)
+            end
+
             local position = self.position + (self.velocity * dt)
             self.position = position
 

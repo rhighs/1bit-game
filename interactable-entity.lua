@@ -2,14 +2,13 @@ local interactable = {}
 
 local vec = require "vec"
 local util = require "util"
+local cooldown = require "cooldown"
 
 local entity = {}
 
-local INTERACTION_WAIT = 0.2
+local INTERACTION_WAIT = 0.4
 
-function entity:update(dt)
-    self.last_interaction = self.last_interaction + dt
-end
+function entity:update(dt) end
 
 function entity:draw()
     if self.player_inside then
@@ -34,7 +33,6 @@ end
 function entity:player_collision(pos)
     self.player_inside = true
     if rl.IsKeyDown(rl.KEY_E) then
-        self.last_interaction = 0.0
         return self.on_interaction()
     end
     return nil
@@ -48,8 +46,7 @@ function interactable.new(pos, width, height, on_interaction)
         pos = pos,
         bounds = bounds,
 
-        on_interaction = on_interaction,
-        last_interaction = INTERACTION_WAIT * 2,
+        on_interaction = cooldown.make_cooled(on_interaction, INTERACTION_WAIT),
         message = "[E] interact",
         player_inside = false
     }, entity)

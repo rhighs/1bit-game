@@ -161,46 +161,65 @@ end
 function player:draw_torch(dt)
     local x_dir, y_dir = self:dir()
 
-    function draw_light_cone(cone_length, cone_color)
-        local v1, v2, v3 =
+    function draw_frustum(cone_near, cone_far, cone_color)
+        local pivot, v2_near, v3_near, v2_far, v3_far =
             vec.v2(
                 self.body.position.x + (self.body.radius * self.facing_dir.x),
                 self.body.position.y
             ),
             vec.zero(),
+            vec.zero(),
+            vec.zero(),
             vec.zero()
 
         if x_dir == 0 and y_dir ~= 0 then
-            v2 = v1 + (vec.normalize(vec.v2(-2, 3 * y_dir)) * cone_length)
-            v3 = v1 + (vec.normalize(vec.v2(2, 3 * y_dir)) * cone_length)
+            local v2_dir = vec.normalize(vec.v2(-2, 3 * y_dir))
+            local v3_dir = vec.normalize(vec.v2(2, 3 * y_dir))
+
+            v2_near = pivot + (v2_dir * cone_near)
+            v3_near = pivot + (v3_dir * cone_near)
+            v2_far = pivot + (v2_dir * cone_far)
+            v3_far = pivot + (v3_dir * cone_far)
+
             -- swapping for winding order...
-            if y_dir == -1 then v2, v3 = v3, v2 end
+            if y_dir == 1 then v2_far, v3_far, v2_near, v3_near = v3_far, v2_far, v3_near, v2_near end
         else
-            v2 = v1 + (vec.normalize(vec.v2(3 * self.facing_dir.x, -2 + self.facing_dir.y * 3)) * cone_length)
-            v3 = v1 + (vec.normalize(vec.v2(3 * self.facing_dir.x,  2 + self.facing_dir.y * 3)) * cone_length)
+            local v2_dir = vec.normalize(vec.v2(3 * self.facing_dir.x, -2 + self.facing_dir.y * 3))
+            local v3_dir = vec.normalize(vec.v2(3 * self.facing_dir.x,  2 + self.facing_dir.y * 3))
+
+            v2_near = pivot + (v2_dir * cone_near)
+            v3_near = pivot + (v3_dir * cone_near)
+            v2_far = pivot + (v2_dir * cone_far)
+            v3_far = pivot + (v3_dir * cone_far)
+
+            v2_near = pivot + (v2_dir * cone_near)
+            v3_near = pivot + (v3_dir * cone_near)
+            v2_far = pivot + (v2_dir * cone_far)
+            v3_far = pivot + (v3_dir * cone_far)
+
             -- swapping for winding order...
-            if self.facing_dir.x == 1 then v2, v3 = v3, v2 end
+            if self.facing_dir.x == -1 then v2_far, v3_far, v2_near, v3_near = v3_far, v2_far, v3_near, v2_near end
         end
-        rl.DrawTriangle(v1, v2, v3, cone_color)
+
+        rl.DrawTriangle(v2_near, v3_far, v2_far, cone_color)
+        rl.DrawTriangle(v3_near, v3_far, v2_near, cone_color)
     end
 
     function draw_torch_handle(handle_wh, handle_color)
+        local r, w, h = self.body.radius, handle_wh.width, handle_wh.height
         rl.DrawRectanglePro(
             util.Rec(
-                self.body.position.x + self.body.radius,
+                self.body.position.x + r * self.facing_dir.x,
                 self.body.position.y,
-                handle_wh.width,
-                handle_wh.height,
-                handle_color
+                w, h
             ),
-            vec.v2(self.body.radius, handle_wh.height/2),
-            math.deg(math.atan(y_dir, self.facing_dir.x)),
+            vec.v2(w/2, h/2),
+            math.deg(math.atan2(y_dir, 1)) * self.facing_dir.x,
             handle_color
         )
     end
 
-    draw_light_cone(TORCH_MAX_LENGTH, util.Color(255, 255, 255, (self.torch_battery / 100.0) * 255))
-    draw_light_cone(TORCH_MAX_LENGTH * 0.1, color.COLOR_NEGATIVE)
+    draw_frustum(20, TORCH_MAX_LENGTH, util.Color(255, 255, 255, (self.torch_battery / 100.0) * 255))
     draw_torch_handle({ width = 10, height = 5 }, color.COLOR_POSITIVE)
 end
 

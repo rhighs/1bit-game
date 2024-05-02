@@ -159,29 +159,49 @@ function player:draw(dt)
 end
 
 function player:draw_torch(dt)
-    local torch_length = (self.torch_battery / 100.0) * TORCH_MAX_LENGTH
-    local v1, v2, v3 =
-        vec.v2(
-            self.body.position.x + (self.facing_dir.x == -1 and -10 or self.body.radius),
-            self.body.position.y
-        ),
-        vec.zero(),
-        vec.zero()
-
     local x_dir, y_dir = self:dir()
-    if x_dir == 0 and y_dir ~= 0 then
-        v2 = v1 + (vec.normalize(vec.v2(-2, 3 * y_dir)) * torch_length)
-        v3 = v1 + (vec.normalize(vec.v2(2, 3 * y_dir)) * torch_length)
-        -- swapping for winding order...
-        if y_dir == -1 then v2, v3 = v3, v2 end
-    else
-        v2 = v1 + (vec.normalize(vec.v2(3 * self.facing_dir.x, -2 + self.facing_dir.y * 3)) * torch_length)
-        v3 = v1 + (vec.normalize(vec.v2(3 * self.facing_dir.x, 2 + self.facing_dir.y * 3)) * torch_length)
-        -- swapping for winding order...
-        if self.facing_dir.x == 1 then v2, v3 = v3, v2 end
+
+    function draw_light_cone(cone_length, cone_color)
+        local v1, v2, v3 =
+            vec.v2(
+                self.body.position.x + (self.body.radius * self.facing_dir.x),
+                self.body.position.y
+            ),
+            vec.zero(),
+            vec.zero()
+
+        if x_dir == 0 and y_dir ~= 0 then
+            v2 = v1 + (vec.normalize(vec.v2(-2, 3 * y_dir)) * cone_length)
+            v3 = v1 + (vec.normalize(vec.v2(2, 3 * y_dir)) * cone_length)
+            -- swapping for winding order...
+            if y_dir == -1 then v2, v3 = v3, v2 end
+        else
+            v2 = v1 + (vec.normalize(vec.v2(3 * self.facing_dir.x, -2 + self.facing_dir.y * 3)) * cone_length)
+            v3 = v1 + (vec.normalize(vec.v2(3 * self.facing_dir.x,  2 + self.facing_dir.y * 3)) * cone_length)
+            -- swapping for winding order...
+            if self.facing_dir.x == 1 then v2, v3 = v3, v2 end
+        end
+        rl.DrawTriangle(v1, v2, v3, cone_color)
     end
 
-    rl.DrawTriangle(v1, v2, v3, util.Color(255, 255, 255, (self.torch_battery / 100.0) * 255))
+    function draw_torch_handle(handle_wh, handle_color)
+        rl.DrawRectanglePro(
+            util.Rec(
+                self.body.position.x + self.body.radius,
+                self.body.position.y,
+                handle_wh.width,
+                handle_wh.height,
+                handle_color
+            ),
+            vec.v2(self.body.radius, handle_wh.height/2),
+            math.deg(math.atan(y_dir, self.facing_dir.x)),
+            handle_color
+        )
+    end
+
+    draw_light_cone(TORCH_MAX_LENGTH, util.Color(255, 255, 255, (self.torch_battery / 100.0) * 255))
+    draw_light_cone(TORCH_MAX_LENGTH * 0.1, color.COLOR_NEGATIVE)
+    draw_torch_handle({ width = 10, height = 5 }, color.COLOR_POSITIVE)
 end
 
 function player:dir()

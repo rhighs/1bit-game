@@ -162,7 +162,7 @@ return {
       },
       properties = {},
       wangsets = {},
-      tilecount = 5,
+      tilecount = 4,
       tiles = {
         {
           id = 0,
@@ -187,12 +187,6 @@ return {
           image = "../assets/ghost-arm.png",
           width = 32,
           height = 64
-        },
-        {
-          id = 4,
-          image = "../assets/pendulum-origin.png",
-          width = 10,
-          height = 10
         }
       }
     }
@@ -529,20 +523,6 @@ return {
           height = 64,
           rotation = 0,
           gid = 21,
-          visible = true,
-          properties = {}
-        },
-        {
-          id = 84,
-          name = "pendulum",
-          type = "",
-          shape = "rectangle",
-          x = 170.333,
-          y = 1303,
-          width = 10,
-          height = 10,
-          rotation = 0,
-          gid = 22,
           visible = true,
           properties = {}
         }

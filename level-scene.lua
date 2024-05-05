@@ -10,6 +10,7 @@ local start_screen = require "start-screen-controller"
 local ghost = require "ghost"
 local interactable = require "interactable-entity"
 local cooldown = require "cooldown"
+local arm = require "arm"
 
 local level_scene = {}
 
@@ -20,6 +21,8 @@ function create_entity(data)
         return interactable.new(data.pos, data.width, data.height, function()
             return "level-completed"
         end)
+    elseif data.enemy_id == "arm" then
+        return arm.new(data.pos)
     end
     error(util.pystr("unknown entity: ", data))
     -- add more entities here

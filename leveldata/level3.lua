@@ -10,7 +10,7 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 83,
+  nextobjectid = 85,
   properties = {},
   tilesets = {
     {
@@ -162,7 +162,7 @@ return {
       },
       properties = {},
       wangsets = {},
-      tilecount = 3,
+      tilecount = 5,
       tiles = {
         {
           id = 0,
@@ -181,6 +181,18 @@ return {
           image = "../assets/level_end.png",
           width = 96,
           height = 96
+        },
+        {
+          id = 3,
+          image = "../assets/ghost-arm.png",
+          width = 32,
+          height = 64
+        },
+        {
+          id = 4,
+          image = "../assets/pendulum-origin.png",
+          width = 10,
+          height = 10
         }
       }
     }
@@ -503,6 +515,34 @@ return {
           height = 32,
           rotation = 0,
           gid = 18,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 83,
+          name = "arm",
+          type = "",
+          shape = "rectangle",
+          x = 320,
+          y = 1408,
+          width = 32,
+          height = 64,
+          rotation = 0,
+          gid = 21,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 84,
+          name = "pendulum",
+          type = "",
+          shape = "rectangle",
+          x = 170.333,
+          y = 1303,
+          width = 10,
+          height = 10,
+          rotation = 0,
+          gid = 22,
           visible = true,
           properties = {}
         }

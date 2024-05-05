@@ -7,5 +7,6 @@ function vec.unit() return vec.v2(1, 1) end
 function vec.normalize(v) return rl.Vector2Normalize(v) end
 function vec.length(v) return rl.Vector2Length(v) end
 function vec.rotate(v, angle) return rl.Vector2Rotate(v, angle) end
+function vec.pow2(v) return vec.v2(math.pow(v.x, 2), math.pow(v.y, 2)) end
 
 return vec

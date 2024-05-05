@@ -1,2 +1,4 @@
 leveldata/*.lua
 *.tiled-session
+*.exe
+ghosts

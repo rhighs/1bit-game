@@ -17,6 +17,9 @@ function start_screen.new()
             self.counter = self.counter + 1
         end,
 
+        draw_options = function (self)
+        end,
+
         draw = function (self)
             local width = rl.MeasureText("GHOSTS", 92)
             rl.DrawText("GHOSTS", consts.VP_WIDTH/2 - width/2, 100, 92, rl.WHITE)

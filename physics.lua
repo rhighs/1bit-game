@@ -14,13 +14,12 @@ function physics.new_circle(pos, r, density)
         gravity = physics.GRAVITY,
         gravity_enabled = true,
         air_resistance_enabled = true,
-        acceleration = vec.zero(),
         force = vec.zero(),
         grounded = false,
         colliders = {},
 
         density = density,
-        mass = density * (math.pi * math.pow(r, 2)),
+        mass = math.pi * r * r * density,
 
         position_update = function(self, dt)
             if self.air_resistance_enabled then
@@ -31,9 +30,9 @@ function physics.new_circle(pos, r, density)
                 self:apply_force(air_resistance_force * 10)
             end
 
-            local acceleration_from_force = (self.force / self.mass)
             -- update positions
-            self.velocity = self.velocity + (self.acceleration * dt) + (acceleration_from_force * dt)
+            local acceleration = self.force/self.mass
+            self.velocity = self.velocity + acceleration * dt
             if self.gravity_enabled then
                 self.velocity = self.velocity + (self.gravity * dt)
             end

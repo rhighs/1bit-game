@@ -21,7 +21,7 @@ function entity:draw()
         textures.ghost,
         util.Rec(0, 0, 32 * self.dir, 32),
         self.pos,
-        rl.BLACK
+        rl.WHITE
     )
 end
 

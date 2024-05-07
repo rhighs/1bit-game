@@ -96,7 +96,7 @@
   <object id="81" template="ghost.tx" x="2016" y="1120"/>
   <object id="82" template="ghost.tx" x="1760" y="960"/>
   <object id="83" template="arm.tx" x="320" y="1408"/>
-  <object id="85" name="pendulum" gid="18" x="384" y="1248" width="32" height="32"/>
+  <object id="85" name="chain-ball" gid="18" x="384" y="1248" width="32" height="32"/>
  </objectgroup>
  <layer id="3" name="decor" width="200" height="50">
   <data encoding="csv">

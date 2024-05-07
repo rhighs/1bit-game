@@ -14,8 +14,6 @@ local arm = require "arm"
 local pendulum = require "pendulum"
 local ball = require "ball"
 
-local pendulum = require "pendulum"
-
 local level_scene = {}
 
 function create_entity(data)
@@ -27,7 +25,7 @@ function create_entity(data)
         end)
     elseif data.enemy_id == "arm" then
         return arm.new(data.pos)
-    elseif data.enemy_id == "pendulum" then
+    elseif data.enemy_id == "chain-ball" then
         return ball.new(data.pos)
     end
     error(util.pystr("unknown entity: ", data))
@@ -67,8 +65,6 @@ function level_scene.new()
                     table.insert(self.physics_bodies, entt.body)
                 end
             end
-
-            self.pendulum = pendulum.new(vec.v2(300, 1300), 10, 100, math.rad(90))
         end,
 
         color_swap = cooldown.make_cooled(function (self)
@@ -89,8 +85,6 @@ function level_scene.new()
             ))
             physics.update_physics(self.data.ground, self.physics_bodies, dt)
             -- self.cam:retarget(self.player:position())
-
-            self.pendulum:update(dt)
 
             for _, e in ipairs(self.enemies) do
                 e:update(dt)
@@ -178,8 +172,6 @@ function level_scene.new()
             self:draw_simple_grid(self.data.decor)
             self.player:draw(dt)
             self:draw_simple_grid(self.data.ground)
-
-            self.pendulum:draw(dt)
 
             for _, e in ipairs(self.enemies) do
                 if self.cam:is_inside(e:get_draw_box()) then

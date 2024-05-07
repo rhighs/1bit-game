@@ -528,7 +528,7 @@ return {
         },
         {
           id = 85,
-          name = "pendulum",
+          name = "chain-ball",
           type = "",
           shape = "rectangle",
           x = 384,

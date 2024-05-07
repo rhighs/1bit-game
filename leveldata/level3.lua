@@ -10,7 +10,7 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 85,
+  nextobjectid = 87,
   properties = {},
   tilesets = {
     {
@@ -523,6 +523,20 @@ return {
           height = 64,
           rotation = 0,
           gid = 21,
+          visible = true,
+          properties = {}
+        },
+        {
+          id = 85,
+          name = "pendulum",
+          type = "",
+          shape = "rectangle",
+          x = 384,
+          y = 1248,
+          width = 32,
+          height = 32,
+          rotation = 0,
+          gid = 18,
           visible = true,
           properties = {}
         }

@@ -13,16 +13,13 @@ local entity = {}
 
 function entity:update(dt)
     local force = physics.GRAVITY.y * math.sin(self.angle)
-    self.angle_a = (-1 * force) / self.rod_length
+    local angle_a = -force / self.rod_length
     self.angle_v = self.angle_v + self.angle_a * dt
     self.angle = self.angle + self.angle_v * dt
 end
 
 function entity:draw()
-    local bob_position = vec.v2(
-        self.pivot_pos.x + math.sin(self.angle) * self.rod_length,
-        self.pivot_pos.y + math.cos(self.angle) * self.rod_length
-    )
+    local bob_position = self.pivot_pos + vec.v2(math.sin(self.angle), math.cos(self.angle)) * self.rod_length
     rl.DrawCircleV(self.pivot_pos, 3, rl.WHITE)
     rl.DrawLineV(self.pivot_pos, bob_position, rl.WHITE)
     rl.DrawCircleV(bob_position, self.bob_radius, rl.WHITE)
@@ -39,11 +36,7 @@ end
 
 function entity:get_hitbox()
     -- rob: not really correct atm, but whatever
-    local bob_position = vec.v2(
-        self.pivot_pos.x + math.sin(self.angle) * self.rod_length,
-        self.pivot_pos.y + math.cos(self.angle) * self.rod_length
-    )
-
+    local bob_position = self.pivot_pos + vec.v2(math.sin(self.angle), math.cos(self.angle)) * self.rod_length
     return util.Rec(
         bob_position.x - self.bob_radius,
         bob_position.y - self.bob_radius,

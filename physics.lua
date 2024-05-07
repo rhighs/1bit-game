@@ -50,6 +50,7 @@ function physics.new_circle(pos, r, density)
             self:position_update(dt)
         end,
 
+        reset_forces = function (self) self.force = 0 end,
         apply_force = function(self, force) self.force = self.force + force end,
     }
 
@@ -102,9 +103,7 @@ end
 function physics.update_physics(grid, bodies, dt)
     for i, body in ipairs(bodies) do
         body.gravity = physics.GRAVITY
-        local old_position = body.position
         body:update(dt)
-        local new_position = body.position
         local tiles = occupied_tiles(body.position, body.radius)
 
         local static_bodies = {}

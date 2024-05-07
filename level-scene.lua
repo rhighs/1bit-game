@@ -11,6 +11,8 @@ local ghost = require "ghost"
 local interactable = require "interactable-entity"
 local cooldown = require "cooldown"
 local arm = require "arm"
+local pendulum = require "pendulum"
+local ball = require "ball"
 
 local pendulum = require "pendulum"
 
@@ -25,6 +27,8 @@ function create_entity(data)
         end)
     elseif data.enemy_id == "arm" then
         return arm.new(data.pos)
+    elseif data.enemy_id == "pendulum" then
+        return ball.new(data.pos)
     end
     error(util.pystr("unknown entity: ", data))
     -- add more entities here
@@ -54,9 +58,14 @@ function level_scene.new()
             self.physics_bodies = {
                 self.player.body,
             }
+
             self.enemies = {}
             for _, e in ipairs(self.data.entities) do
-                table.insert(self.enemies, create_entity(e))
+                local entt = create_entity(e)
+                table.insert(self.enemies, entt)
+                if entt.has_physics_body ~= nil then
+                    table.insert(self.physics_bodies, entt.body)
+                end
             end
 
             self.pendulum = pendulum.new(vec.v2(300, 1300), 10, 100, math.rad(90))

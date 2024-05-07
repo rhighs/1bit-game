@@ -9,6 +9,8 @@ local util = require "util"
 local vec = require "vec"
 local physics = require "physics"
 
+local timer = require "timer"
+
 local entity = {}
 
 function entity:update(dt)
@@ -50,7 +52,9 @@ end
 
 function pendulum.new(pivot_pos, bob_radius, rod_length, start_angle)
     entity.__index = entity
+
     return setmetatable({
+        timer = timer.new(3),
         pivot_pos = pivot_pos,
         rod_length = rod_length,
         bob_radius = bob_radius,

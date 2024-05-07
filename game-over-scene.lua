@@ -7,6 +7,9 @@ function scene:init()
     self.timer:reset()
 end
 
+function scene:destroy()
+end
+
 function scene:update(dt)
     self.timer:update(dt)
 end

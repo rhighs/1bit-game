@@ -38,7 +38,6 @@ function level_scene.new()
         player = nil,
         data = {},
         cam = camera.new(consts.VP, vec.v2(0, 0)),
-        physics_bodies = {},
         bg_color = rl.BLACK,
         level_bounds = nil,
         do_game_over = false,
@@ -53,17 +52,21 @@ function level_scene.new()
             self.data = loader.load_level(require(data.level))
             self.player = player_lib.new(self.data.level_start)
             self.level_bounds = self.data.level_bounds
-            self.physics_bodies = {
-                self.player.body,
-            }
-
             self.enemies = {}
             for _, e in ipairs(self.data.entities) do
                 local entt = create_entity(e)
                 table.insert(self.enemies, entt)
-                if entt.has_physics_body ~= nil then
-                    table.insert(self.physics_bodies, entt.body)
-                end
+                physics.register_body(entt.body)
+            end
+
+            physics.register_body(self.player.body)
+            self.pendulum = pendulum.new(vec.v2(300, 1300), 10, 100, math.rad(179.99))
+        end,
+
+        destroy = function (self)
+            physics.unregister_body(self.player.body)
+            for _, e in ipairs(self.enemies) do
+                physics.unregister_body(e.body)
             end
         end,
 
@@ -83,7 +86,7 @@ function level_scene.new()
                 util.clamp(self.player:position().x, self.level_bounds.x + consts.VP.x/2, self.level_bounds.x + self.level_bounds.width - consts.VP.x/2),
                 util.clamp(self.player:position().y, self.level_bounds.y + consts.VP.y/2, self.level_bounds.y + self.level_bounds.height - consts.VP.y/2)
             ))
-            physics.update_physics(self.data.ground, self.physics_bodies, dt)
+            physics.check_collisions(self.data.ground, physics.bodies, dt)
             -- self.cam:retarget(self.player:position())
 
             for _, e in ipairs(self.enemies) do

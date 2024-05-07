@@ -6,6 +6,50 @@ physics.METER_UNIT = 32
 physics.GRAVITY = vec.v2(0, 2 * 9.8 * physics.METER_UNIT)
 physics.AIR_RESISTANCE_COEFF = 2
 
+physics.bodies = {}
+
+function physics.register_body(body)
+    table.insert(physics.bodies, body)
+end
+
+function physics.unregister_body(body)
+    for i, b in ipairs(table) do
+        if b == body then
+            table.remove(physics.bodies, i)
+        end
+    end
+end
+
+function default_collision_resolver(body, static_bodies)
+    local ct = vec.floor(body.position / 32)
+
+    local ground_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y + 1) end)
+    body.grounded = ground_tile ~= nil
+    if body.grounded then
+        body.position.y = (ground_tile.y * 32) - body.radius
+    end
+
+    local top_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y - 1) end)
+    if top_tile ~= nil then
+        body.position.y = (top_tile.y * 32 + 32) + body.radius
+        if body.velocity.y < 0 then
+            body.velocity.y = 0 
+        end
+    end
+
+    local left_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x - 1) and tile.y == ct.y end)
+    if left_tile ~= nil then
+        body.position.x = (left_tile.x * 32 + 32) + body.radius
+        body.velocity.x = 0
+    end
+
+    local right_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x + 1) and tile.y == ct.y end)
+    if right_tile ~= nil then
+        body.position.x = (right_tile.x * 32) - body.radius
+        body.velocity.x = 0
+    end
+end
+
 function physics.new_circle(pos, r, density)
     local obj = {
         radius = r,
@@ -17,6 +61,13 @@ function physics.new_circle(pos, r, density)
         force = vec.zero(),
         grounded = false,
         colliders = {},
+
+        pivot = nil,
+        angle_a = 0,
+        angle_v = 0,
+        angle = 0,
+
+        collision_resolver = default_collision_resolver,
 
         density = density,
         mass = math.pi * r * r * density,
@@ -52,6 +103,7 @@ function physics.new_circle(pos, r, density)
 
         reset_forces = function (self) self.force = 0 end,
         apply_force = function(self, force) self.force = self.force + force end,
+        resolve_collisions = function(self, static_bodies) self.collision_resolver(self, static_bodies) end,
     }
 
     return obj
@@ -70,42 +122,9 @@ function occupied_tiles(position, radius)
     }
 end
 
-function resolve_body_collisions(body, static_bodies)
-    local ct = vec.floor(body.position / 32)
-
-    local ground_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y + 1) end)
-    body.grounded = ground_tile ~= nil
-    if body.grounded then
-        body.position.y = (ground_tile.y * 32) - body.radius
-    end
-
-    local top_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y - 1) end)
-    if top_tile ~= nil then
-        body.position.y = (top_tile.y * 32 + 32) + body.radius
-        if body.velocity.y < 0 then
-            body.velocity.y = 0 
-        end
-    end
-
-    local left_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x - 1) and tile.y == ct.y end)
-    if left_tile ~= nil then
-        body.position.x = (left_tile.x * 32 + 32) + body.radius
-        body.velocity.x = 0
-    end
-
-    local right_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x + 1) and tile.y == ct.y end)
-    if right_tile ~= nil then
-        body.position.x = (right_tile.x * 32) - body.radius
-        body.velocity.x = 0
-    end
-end
-
-function physics.update_physics(grid, bodies, dt)
+function physics.check_collisions(grid, bodies, dt)
     for i, body in ipairs(bodies) do
-        body.gravity = physics.GRAVITY
-        body:update(dt)
         local tiles = occupied_tiles(body.position, body.radius)
-
         local static_bodies = {}
         for _, tile in ipairs(tiles) do
             local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
@@ -114,8 +133,7 @@ function physics.update_physics(grid, bodies, dt)
                 table.insert(static_bodies, tile)
             end
         end
-
-        resolve_body_collisions(body, static_bodies)
+        body:resolve_collisions(static_bodies)
     end
 
     for i, first_body in ipairs(bodies) do

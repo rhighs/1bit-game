@@ -121,6 +121,7 @@ function player:update(dt)
     self:collisions_update(dt)
     self:update_torch(dt)
     self.texture_cycle:update(dt)
+    self.body:update(dt)
 
     if rl.IsKeyDown(rl.KEY_T) then
         self:toggle_torch()

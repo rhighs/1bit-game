@@ -7,6 +7,7 @@ local physics = require "physics"
 local entity = {}
 
 function entity:update(dt)
+    self.body:update(dt)
     return self['state_' .. self.state](self, dt)
 end
 
@@ -19,7 +20,6 @@ function entity:state_pendulum(dt)
 
     if self.angle < -math.pi/4 then
         self.state = "throw"
-        self.body.air_resistance_enabled = false
         local v = self.pivot_pos - self.bob_pos
         local norm = vec.normalize(vec.rotate(v, -math.pi/2))
         self.body.position = self.bob_pos
@@ -55,6 +55,18 @@ entity.has_physics_body = true
 
 function ball.new(spawn_pos)
     entity.__index = entity
+    local body = physics.new_circle(vec.zero(), 16, 1/10000)
+    body.air_resistance_enabled = false
+    body.collision_resolver = function (body, static_bodies)
+        local ct = vec.floor(body.position / 32)
+
+        local ground_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y + 1) end)
+        body.grounded = ground_tile ~= nil
+        if body.grounded then
+            body.position.y = (ground_tile.y * 32) - body.radius
+        end
+    end
+
     return setmetatable({
         pivot_pos = spawn_pos,
         bob_pos = spawn_pos + vec.v2(0, 4 * 32),
@@ -62,7 +74,7 @@ function ball.new(spawn_pos)
         angle = 0,
         radius = 128,
         state = "pendulum",
-        body = physics.new_circle(vec.zero(), 16, 1/10000),
+        body = body,
     }, entity)
 end
 

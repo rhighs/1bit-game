@@ -34,6 +34,7 @@ while not rl.WindowShouldClose() do
     scenes:get():update(dt)
     next_scene = scenes:get():should_change()
     if next_scene ~= nil then
+        scenes:get():destroy()
         scenes.cur = next_scene.name
         scenes:get():init(next_scene.data)
     end

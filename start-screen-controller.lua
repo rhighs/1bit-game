@@ -10,6 +10,8 @@ function start_screen.new()
 
         init = function (self) end,
 
+        destroy = function (self) end,
+
         update = function (self)
             if self.counter == 50 then
                 self.counter = 0

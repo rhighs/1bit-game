@@ -110,7 +110,7 @@ end
 function player:collisions_update()
     local n_colliding = #(self.body.colliders)
     if #(self.body.colliders) > 0 then
-        util.pyprint("player colliding with =", self.body.colliders)
+        GAME_LOG("player colliding with =", self.body.colliders)
     end
 end
 

@@ -9,18 +9,18 @@ function loader.find_layer(data, name)
             return l
         end
     end
-    print("layer not found: ", name)
+    GAME_LOG("layer not found: ", name)
     return nil
 end
 
 function find_tileset(data, name)
-    print("searching", name)
+    GAME_LOG("searching", name)
     for _, t in ipairs(data.tilesets) do
         if t.name == name then
             return t
         end
     end
-    print("tileset not found: ", name)
+    GAME_LOG("tileset not found: ", name)
     return nil
 end
 

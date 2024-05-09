@@ -82,7 +82,7 @@ function entity:state_return()
 end
 
 function arm.new(spawn_pos)
-    print("creating arm")
+    GAME_LOG("creating arm")
     entity.__index = entity
     return setmetatable({
         pos = spawn_pos,

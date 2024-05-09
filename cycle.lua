@@ -8,7 +8,7 @@ function cycle:update(dt)
     self.timer:update(dt)
     if self.timer:done() then
         self.timer:reset()
-        self.count = (self.count % self.to) + self.from
+        self.count = self.count == self.to - 1 and self.from or self.count + 1
     end
 end
 

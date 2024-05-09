@@ -35,6 +35,11 @@ while not rl.WindowShouldClose() do
     next_scene = scenes:get():should_change()
     if next_scene ~= nil then
         scenes:get():destroy()
+        if next_scene.name == "/quit" then
+            GAME_LOG("/quit received...")
+            os.exit(0)
+        end
+
         scenes.cur = next_scene.name
         scenes:get():init(next_scene.data)
     end
@@ -43,7 +48,7 @@ while not rl.WindowShouldClose() do
 	rl.ClearBackground(color.COLOR_SECONDARY)
     rl.DrawFPS(10, 10)
 
-    scenes:get():draw()
+    scenes:get():draw(dt)
 
 	rl.EndDrawing()
 end

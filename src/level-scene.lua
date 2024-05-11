@@ -7,30 +7,26 @@ local color = require "color"
 local vec = require "vec"
 local physics = require "physics"
 local start_screen = require "start-screen-controller"
-local ghost = require "ghost"
-local interactable = require "interactable-entity"
 local cooldown = require "cooldown"
-local arm = require "arm"
-local pendulum = require "pendulum"
-local ball = require "ball"
+local entity = require "entity"
 
 local level_scene = {}
 
-function create_entity(data)
-    if data.enemy_id == "ghost" then
-        return ghost.new(data.pos)
-    elseif data.enemy_id == "level-end" then
-        return interactable.new(data.pos, data.width, data.height, function()
-            return "level-completed"
-        end)
-    elseif data.enemy_id == "arm" then
-        return arm.new(data.pos)
-    elseif data.enemy_id == "chain-ball" then
-        return ball.new(data.pos)
-    end
-    error(util.pystr("unknown entity: ", data))
-    -- add more entities here
-end
+-- function create_entity(data)
+--     if data.enemy_id == "ghost" then
+--         return ghost.new(data.pos)
+--     elseif data.enemy_id == "level-end" then
+--         return interactable.new(data.pos, data.width, data.height, function()
+--             return "level-completed"
+--         end)
+--     elseif data.enemy_id == "arm" then
+--         return arm.new(data.pos)
+--     elseif data.enemy_id == "chain-ball" then
+--         return ball.new(data.pos)
+--     end
+--     error(util.pystr("unknown entity: ", data))
+--     -- add more entities here
+-- end
 
 function level_scene.new()
     return {
@@ -54,13 +50,12 @@ function level_scene.new()
             self.level_bounds = self.data.level_bounds
             self.enemies = {}
             for _, e in ipairs(self.data.entities) do
-                local entt = create_entity(e)
+                local entt = entity.create_entity(e)
                 table.insert(self.enemies, entt)
                 physics.register_body(entt.body)
             end
 
             physics.register_body(self.player.body)
-            self.pendulum = pendulum.new(vec.v2(300, 1300), 10, 100, math.rad(179.99))
         end,
 
         destroy = function (self)

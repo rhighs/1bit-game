@@ -8,7 +8,6 @@ local pendulum = {}
 local util = require "util"
 local vec = require "vec"
 local physics = require "physics"
-
 local timer = require "timer"
 
 local entity = {}

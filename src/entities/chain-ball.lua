@@ -53,7 +53,7 @@ end
 
 entity.has_physics_body = true
 
-function ball.new(spawn_pos)
+function ball.new(spawn_pos, ...)
     entity.__index = entity
     local body = physics.new_circle(vec.zero(), 16, 1/10000)
     body.air_resistance_enabled = false

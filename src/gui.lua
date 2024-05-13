@@ -208,18 +208,18 @@ end
 function menu_list_container:next()
     self.elements[self.active_option].container.elements[1].child.visible = false
     self.active_option = self.active_option == #self.elements and 1 or self.active_option + 1
-    self.elements[self.active_option].container.elements[1].child.visible = true
+    self.blink_cycle:restart()
 end
 
 function menu_list_container:previous()
     self.elements[self.active_option].container.elements[1].child.visible = false
     self.active_option = self.active_option == 1 and #self.elements or self.active_option - 1
-    self.elements[self.active_option].container.elements[1].child.visible = true
+    self.blink_cycle:restart()
 end
 
 function menu_list_container:update(dt)
     self.blink_cycle:update(dt)
-    self.elements[self.active_option].container.elements[1].child.visible = self.blink_cycle:current() == 1
+    self.elements[self.active_option].container.elements[1].child.visible = self.blink_cycle:current() == 0
     self.vlist_container:update(dt)
 end
 function menu_list_container:get_position() return vec.v2(self.container.x, self.container.y) end

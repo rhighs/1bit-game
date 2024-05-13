@@ -4,6 +4,11 @@ local cycle_lib = {}
 local cycle = {}
 
 function cycle:current() return self.count end
+function cycle:restart() 
+    self.timer:reset()
+    self.count = self.from
+end
+
 function cycle:update(dt)
     self.timer:update(dt)
     if self.timer:done() then
@@ -17,7 +22,7 @@ function cycle_lib.new(from, to, interval)
     return setmetatable({
         from = from,
         to = to,
-        count = 1,
+        count = from,
         timer = timer.new(interval),
     }, cycle)
 end

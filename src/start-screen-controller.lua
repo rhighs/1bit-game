@@ -4,12 +4,13 @@ local vec = require "vec"
 local gui = require "gui"
 local cooldown = require "cooldown"
 
-gui.DEBUG_WIREFRAME = false
-
 local start_screen = {}
 
 function start_screen:init() end
-function start_screen:destroy() end
+function start_screen:destroy()
+    self.should_start = false
+    self.should_quit = false
+end
 
 function start_screen:update(dt)
     if self.counter == 50 then
@@ -57,11 +58,11 @@ function start_screen.new()
 
         options_up = cooldown.make_cooled(function (self)
             self.options_container.child:previous()
-        end, 0.2),
+        end, 0.1),
 
         options_down = cooldown.make_cooled(function (self)
             self.options_container.child:next()
-        end, 0.2),
+        end, 0.1),
 
         options_callback = cooldown.make_cooled(function (self)
             self.options_container.child:call_current()

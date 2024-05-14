@@ -20,32 +20,39 @@ function physics.unregister_body(body)
     end
 end
 
+function physics.clear() physics.bodies = {} end
+
 function physics.check_collisions(grid, bodies, dt)
     for i, body in ipairs(bodies) do
-        local tiles = occupied_tiles(body.position, body.radius)
-        local static_bodies = {}
-        for _, tile in ipairs(tiles) do
-            local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
-            local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
-            if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
-                table.insert(static_bodies, { pos = tile, info = grid[tile.y][tile.x] })
+        if body.static_collisions_enabled then
+            local tiles = occupied_tiles(body.position, body.radius)
+            local static_bodies = {}
+            for _, tile in ipairs(tiles) do
+                local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
+                local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
+                if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
+                    table.insert(static_bodies, { pos = tile, info = grid[tile.y][tile.x] })
+                end
+
+                body:resolve_static_collisions(static_bodies)
             end
         end
-
-        body:resolve_static_collisions(static_bodies)
     end
 
     for i, first_body in ipairs(bodies) do
-        local rigid_body_collisions = {}
-        for j = i + 1, #bodies do
-            local second_body = bodies[j]
-            if check_body_collision(first_body, second_body) then
-                table.insert(rigid_body_collisions, second_body)
+        local dynamic_body_collisions = {}
+        for j, second_body in ipairs(bodies) do
+            if i ~= j then
+                local second_body = bodies[j]
+                local collding = check_body_collision(first_body, second_body)
+                if collding then
+                    table.insert(dynamic_body_collisions, second_body)
+                end
             end
         end
 
-        first_body.colliders = rigid_body_collisions
-        first_body:resolve_rigid_collisions(rigid_body_collisions)
+        first_body.colliders = dynamic_body_collisions
+        first_body:resolve_dynamic_collisions(dynamic_body_collisions)
     end
 end
 
@@ -55,8 +62,8 @@ function physics_body:resolve_static_collisions(static_bodies)
     self.static_collision_resolver(self, static_bodies)
 end
 
-function physics_body:resolve_rigid_collisions(rigid_bodies)
-    self.rigid_collision_resolver(self, rigid_bodies)
+function physics_body:resolve_dynamic_collisions(dynamic_bodies)
+    self.dynamic_collision_resolver(self, dynamic_bodies)
 end
 
 function physics_body:position_update(dt)
@@ -104,6 +111,9 @@ function new_body(position, mass)
         shape_type = nil,
         reset_forces = function (self) self.force = 0 end,
         apply_force = function(self, force) self.force = self.force + force end,
+        on_platform = false,
+        static_collisions_enabled = true,
+        dynamic_collisions_enabled = true,
     }, physics_body)
 end
 
@@ -112,7 +122,7 @@ function physics.new_circle(position, r, density)
     body.__shape = "circle"
     body.radius = r
     body.static_collision_resolver = circle_static_collision_resolver
-    body.rigid_collision_resolver = circle_rigid_collision_resolver
+    body.dynamic_collision_resolver = circle_dynamic_collision_resolver
     return body
 end
 
@@ -120,10 +130,10 @@ function physics.new_rectangle(position, width, height, density)
     local body = new_body(position, width * height * density)
     body.__shape = "rectangle"
     body.width = width
-    body.height = width
+    body.height = height
     body.static_collision_resolver = rectangle_static_collision_resolver
-    body.rigid_collision_resolver = rectangle_rigid_collision_resolver
-    return result
+    body.dynamic_collision_resolver = rectangle_dynamic_collision_resolver
+    return body
 end
 
 function occupied_tiles(position, radius)
@@ -159,7 +169,17 @@ function check_body_collision(first_body, second_body)
         end
     elseif first_body.__shape == "rectangle" then
         if second_body.__shape == "circle" then
-            return rl.CheckCollisionCircles(
+            return rl.CheckCollisionCircleRec(
+                second_body.position, second_body.radius,
+                util.Rec(
+                    first_body.position.x,
+                    first_body.position.y,
+                    first_body.width,
+                    first_body.height
+                )
+            )
+        elseif second_body.__shape == "rectangle" then
+            return rl.CheckCollisionRecs(
                 util.Rec(
                     first_body.position.x,
                     first_body.position.y,
@@ -171,16 +191,6 @@ function check_body_collision(first_body, second_body)
                     second_body.position.y,
                     second_body.width,
                     second_body.height
-                )
-            )
-        elseif second_body.__shape == "rectangle" then
-            return rl.CheckCollisionCircleRec(
-                second_body.position, second_body.radius,
-                util.Rec(
-                    first_body.position.x,
-                    first_body.position.y,
-                    first_body.width,
-                    first_body.height
                 )
             )
         end
@@ -225,8 +235,49 @@ function circle_static_collision_resolver(body, static_bodies)
     end
 end
 
-function circle_rigid_collision_resolver(body, rigid_bodies) end
+function circle_dynamic_collision_resolver(body, dynamic_bodies)
+    local rectangles = table.filter(dynamic_bodies, function(r) return r.__shape == "rectangle" end)
+    local should_recompute = #rectangles > 0
+
+    local bottom_body = table.find(rectangles, function(r) return r.position.y > body.position.y end)
+    body.on_platform = bottom_body ~= nil 
+    if body.on_platform then
+        body.on_platform = true
+        body.position.y = bottom_body.position.y - body.radius
+        if body.velocity.y > 0 then
+            body.velocity.y = 0
+        end
+        body.velocity.x = bottom_body.velocity.x
+    end
+
+    local top_body = table.find(rectangles, function(r) return r.position.y < body.position.y and body.position.x >= r.position.x and body.position.x <= r.position.x + r.width end)
+    if top_body ~= nil then
+        body.position.y = top_body.position.y + top_body.height + body.radius
+        if body.velocity.y < 0 then
+            body.velocity.y = 0
+        end
+    end
+
+    local left_body = table.find(rectangles, function(r) return r.position.x < body.position.x and r.position.x + r.width < body.position.x end)
+    if left_body ~= nil then
+        body.position.x = left_body.position.x + left_body.width + body.radius
+        body.velocity.x = 0
+    end
+
+    local right_body = table.find(rectangles, function(r) return r.position.x > body.position.x end)
+    if right_body ~= nil then
+        body.position.x = right_body.position.x - body.radius
+        body.velocity.x = 0
+    end
+
+    -- ideally, calculate collisions again if the above changed body.position
+    -- if should_recompute then
+    --     any collision?
+    -- end
+    -- local circles = table.filter(dynamic_bodies, function(r) return r.__shape == "circle" end)
+end
+
 function rectangle_static_collision_resolver(body, static_bodies) end
-function rectangle_rigid_collision_resolver(body, rigid_bodies) end
+function rectangle_dynamic_collision_resolver(body, dynamic_bodies) end
 
 return physics

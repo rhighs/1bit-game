@@ -8,6 +8,9 @@ local color = require "color"
 
 local player_lib = {}
 
+player_lib.DEBUG_DRAW = false
+player_lib.DEBUG_STATE = false
+
 local player = {}
 
 local PLAYER_BODY_DENSITY = 1
@@ -69,7 +72,7 @@ end
 
 function player:handle_jumping()
     local should_jump = rl.IsKeyDown(rl.KEY_SPACE)
-    if should_jump and self.body.grounded and self.body.velocity.y >= 0 then
+    if should_jump and (self.body.grounded or self.body.on_platform) and self.body.velocity.y >= 0 then
         self:jump()
         return true
     end
@@ -87,7 +90,7 @@ function player:update_state()
         end
     elseif self.state == PLAYER_STATE_JUMPING then
         local moving = self:handle_movement()
-        if self.body.grounded then
+        if self.body.grounded or self.body.on_platform then
             if math.abs(self.body.velocity.x) > 0 then
                 self.state = PLAYER_STATE_RUNNING
             else
@@ -110,11 +113,14 @@ end
 function player:collisions_update()
     local n_colliding = #(self.body.colliders)
     if #(self.body.colliders) > 0 then
-        GAME_LOG("player colliding with =", self.body.colliders)
+        -- GAME_LOG("player colliding with =", self.body.colliders)
     end
 end
 
 function player:update(dt)
+    if player_lib.DEBUG_STATE then
+        GAME_LOG("player state = " .. state_tostring[self.state])
+    end
     local old_state = self.state
 
     self:update_state()
@@ -154,6 +160,10 @@ function player:draw(dt)
 
     if self.torch then
         self:draw_torch(dt)
+    end
+
+    if player_lib.DEBUG_DRAW then
+        rl.DrawCircleLines(self.body.position.x, self.body.position.y, self.body.radius, rl.RED)
     end
 
     rl.DrawTexturePro(texture, src_rec, dst_rec, vec.zero(), 0.0, rl.WHITE)
@@ -253,9 +263,11 @@ function player_lib.new(player_position)
 
     local init_textures = player_lib.TEXTURES.IDLE
     local body_radius = init_textures[1].height/2
+    local body = physics.new_circle(player_position, body_radius, PLAYER_BODY_DENSITY)
+    body.id = "player"
     return setmetatable({
         speed = physics.METER_UNIT * 10,
-        body = physics.new_circle(player_position, body_radius, PLAYER_BODY_DENSITY),
+        body = body,
         facing_dir = vec.v2(1, 0),
         state = PLAYER_STATE_IDLE,
         textures = init_textures,

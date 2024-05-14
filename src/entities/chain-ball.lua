@@ -124,8 +124,6 @@ end
 function entity:player_collision(pos)
 end
 
-entity.has_physics_body = true
-
 function ball.new(spawn_pos, ...)
     entity.__index = entity
     local body = physics.new_circle(vec.zero(), 16, 1/10000)

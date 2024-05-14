@@ -55,15 +55,19 @@ function level_scene.new()
                 physics.register_body(entt.body)
             end
 
+            -- local entt = entity.create_entity({
+            --     enemy_id = "platform",
+            --     pos = vec.v2(self.player.body.position.x, self.player.body.position.y - 32 * 4),
+            --     width = 100,
+            --     height = 20,
+            -- })
+            -- table.insert(self.enemies, entt)
+            -- physics.register_body(entt.body)
+
             physics.register_body(self.player.body)
         end,
 
-        destroy = function (self)
-            physics.unregister_body(self.player.body)
-            for _, e in ipairs(self.enemies) do
-                physics.unregister_body(e.body)
-            end
-        end,
+        destroy = function (self) physics.clear() end,
 
         color_swap = cooldown.make_cooled(function (self)
             self.bg_color = self.bg_color == rl.WHITE and rl.BLACK or rl.WHITE

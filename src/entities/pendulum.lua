@@ -1,8 +1,3 @@
--- rob: 
--- this can be abstracted into a physics body implementation,
--- the pendulum behavior could be activated when a pivot point
--- is set, otherwise default to the normal physic body behavior.
-
 local pendulum = {}
 
 local util = require "util"

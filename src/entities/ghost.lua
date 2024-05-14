@@ -17,7 +17,6 @@ function entity:update(dt)
 end
 
 function entity:draw()
-    util.pyprint(textures)
     rl.DrawTextureRec(
         textures.ghost,
         util.Rec(0, 0, 32 * self.dir, 32),

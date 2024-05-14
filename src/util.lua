@@ -8,8 +8,9 @@ function _G.GAME_LOG(...) print("[" .. __FILE__(3) .. ":" .. __LINE__(3) .. "] "
 
 function util.Color(r, g, b, a) return ffi.new("Color", r, g, b, a) end
 function util.Rec(x, y, w, h) return ffi.new("Rectangle", x, y, w, h) end
+function util.RecV(v, s) return ffi.new("Rectangle", v.x, v.y, s.x, s.y) end
 function util.sign(a) return a >= 0 and 1 or -1 end
-function util.print(text, y) rl.DrawText(text, 0, y * 24, 24, rl.WHITE) end
+function util.print(text, y) rl.DrawText(text, 0, (y or 0) * 24, 24, rl.WHITE) end
 
 util.DEFAULT_FORMAT_INDENT = 4
 

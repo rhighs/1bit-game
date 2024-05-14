@@ -53,6 +53,7 @@ end
 function physics.new_circle(pos, r, density)
     local obj = {
         radius = r,
+        old_pos = pos,
         position = pos,
         velocity = vec.zero(),
         gravity = physics.GRAVITY,
@@ -88,8 +89,8 @@ function physics.new_circle(pos, r, density)
                 self.velocity = self.velocity + (self.gravity * dt)
             end
 
-            local position = self.position + (self.velocity * dt)
-            self.position = position
+            self.old_pos = self.position
+            self.position = self.position + (self.velocity * dt)
 
             self.force = vec.zero()
         end,
@@ -130,6 +131,7 @@ function physics.check_collisions(grid, bodies, dt)
             local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
             local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
             if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
+                -- tile.id = grid[tile.y][tile.x]
                 table.insert(static_bodies, tile)
             end
         end

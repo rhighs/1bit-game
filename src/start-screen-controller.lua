@@ -4,7 +4,7 @@ local vec = require "vec"
 local gui = require "gui"
 local cooldown = require "cooldown"
 
-gui.DEBUG_WIREFRAME = true
+gui.DEBUG_WIREFRAME = false
 
 local start_screen = {}
 

@@ -59,3 +59,11 @@ function table.sorted(t, cmp)
     table.sort(result, cmp)
     return result
 end
+
+function table.foldl(t, init, fn)
+    local r = init
+    for _, v in ipairs(t) do
+        r = fn(v, r)
+    end
+    return r
+end

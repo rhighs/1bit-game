@@ -23,29 +23,37 @@ end
 function default_collision_resolver(body, static_bodies)
     local ct = vec.floor(body.position / 32)
 
-    local ground_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y + 1) end)
+    local ground_tile = table.find(static_bodies, function(tile)
+        return tile.pos.x == ct.x and tile.pos.y == ct.y + 1
+    end)
     body.grounded = ground_tile ~= nil
     if body.grounded then
-        body.position.y = (ground_tile.y * 32) - body.radius
+        body.position.y = (ground_tile.pos.y * 32) - body.radius
     end
 
-    local top_tile = table.find(static_bodies, function(tile) return tile.x == ct.x and tile.y == (ct.y - 1) end)
+    local top_tile = table.find(static_bodies, function(tile)
+        return tile.pos.x == ct.x and tile.pos.y == ct.y - 1
+    end)
     if top_tile ~= nil then
-        body.position.y = (top_tile.y * 32 + 32) + body.radius
+        body.position.y = (top_tile.pos.y * 32 + 32) + body.radius
         if body.velocity.y < 0 then
-            body.velocity.y = 0 
+            body.velocity.y = 0
         end
     end
 
-    local left_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x - 1) and tile.y == ct.y end)
+    local left_tile = table.find(static_bodies, function(tile)
+        return tile.pos.x == ct.x - 1 and tile.pos.y == ct.y
+    end)
     if left_tile ~= nil then
-        body.position.x = (left_tile.x * 32 + 32) + body.radius
+        body.position.x = (left_tile.pos.x * 32 + 32) + body.radius
         body.velocity.x = 0
     end
 
-    local right_tile = table.find(static_bodies, function(tile) return tile.x == (ct.x + 1) and tile.y == ct.y end)
+    local right_tile = table.find(static_bodies, function(tile)
+        return tile.pos.x == ct.x + 1 and tile.pos.y == ct.y
+    end)
     if right_tile ~= nil then
-        body.position.x = (right_tile.x * 32) - body.radius
+        body.position.x = (right_tile.pos.x * 32) - body.radius
         body.velocity.x = 0
     end
 end
@@ -131,8 +139,7 @@ function physics.check_collisions(grid, bodies, dt)
             local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
             local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
             if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
-                -- tile.id = grid[tile.y][tile.x]
-                table.insert(static_bodies, tile)
+                table.insert(static_bodies, { pos = tile, info = grid[tile.y][tile.x] })
             end
         end
         body:resolve_collisions(static_bodies)

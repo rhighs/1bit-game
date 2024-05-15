@@ -185,8 +185,8 @@ return {
         {
           id = 3,
           image = "../assets/ghost-arm.png",
-          width = 46,
-          height = 58
+          width = 64,
+          height = 64
         }
       }
     }
@@ -517,8 +517,8 @@ return {
           name = "chain-ball",
           type = "",
           shape = "rectangle",
-          x = 3744,
-          y = 1280,
+          x = 448,
+          y = 1248,
           width = 32,
           height = 32,
           rotation = 0,
@@ -617,8 +617,8 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 3520,
-          y = 1536,
+          x = 128,
+          y = 1504,
           width = 32,
           height = 32,
           rotation = 0,

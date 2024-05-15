@@ -26,6 +26,14 @@ function table.filter(t, callable)
     return result
 end
 
+function table.partition(t, callable)
+    local part1, part2 = {}, {}
+    for k, v in pairs(t) do
+        table.insert(callable(v, k) and part2 or part1, v)
+    end
+    return part1, part2
+end
+
 function table.flatten(t)
     local result = {}
     for k, v in pairs(t) do

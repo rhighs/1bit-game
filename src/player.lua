@@ -56,14 +56,20 @@ function player:handle_movement()
     local x_dir, y_dir = self:dir()
     self.facing_dir.y = y_dir
     self.body.air_resistance_enabled = (x_dir == 0)
+
     if x_dir ~= 0 then
+        -- rob: platform_velocity.x should not fight with user input
+        if util.sign(self.body.platform_velocity.x) ~= x_dir then
+            self.body.platform_velocity.x = 0
+        end
+
         local v = vec.v2(x_dir * self.speed, y_dir * self.speed)
         self.body.velocity.x = v.x
         self.facing_dir.x = x_dir
         return true
     end
 
-    if self.body.grounded then
+    if self.body.grounded or self.body.on_platform then
         self.body.velocity.x = 0
     end
 
@@ -72,7 +78,9 @@ end
 
 function player:handle_jumping()
     local should_jump = rl.IsKeyDown(rl.KEY_SPACE)
-    if should_jump and (self.body.grounded or self.body.on_platform) and self.body.velocity.y >= 0 then
+    if should_jump and ((self.body.grounded and self.body.velocity.y >= 0) or self.body.on_platform) then
+        self.body.grounded = false
+        self.body.on_platform = false
         self:jump()
         return true
     end

@@ -66,33 +66,43 @@ function physics_body:resolve_dynamic_collisions(dynamic_bodies)
     self.dynamic_collision_resolver(self, dynamic_bodies)
 end
 
-function physics_body:position_update(dt)
-    if self.air_resistance_enabled then
-        local speed = vec.length(self.velocity)
-        local opposing_vector = -(math.pow(speed, 2) * vec.normalize(self.velocity))
-        local air_resistance_force = (physics.AIR_RESISTANCE_COEFF * opposing_vector) / 2
-        air_resistance_force.y = 0
-        self:apply_force(air_resistance_force * 10)
+function physics_body:update(dt)
+    function consume_velocity(velocity, dt)
+        local acceleration = self.force/self.mass
+        if self.air_resistance_enabled then
+            local speed = vec.length(self.velocity)
+            local opposing_vector = -(math.pow(speed, 2) * vec.normalize(velocity))
+            local air_resistance_force = (physics.AIR_RESISTANCE_COEFF * opposing_vector) / 2
+            air_resistance_force.y = 0
+            acceleration = acceleration + (air_resistance_force * 10 / self.mass)
+        end
+    
+        -- update positions
+        velocity = velocity + acceleration * dt
+        return velocity
     end
 
-    -- update positions
-    local acceleration = self.force/self.mass
-    self.velocity = self.velocity + acceleration * dt
-    if self.gravity_enabled then
+    -- rob: avoid being rocketed downward when a platform you just dropeed off is descending
+    if not self.on_platform and self.platform_velocity.y >= 0 then
+        self.platform_velocity.y = 0
+    end
+
+    if self.grounded and self.velocity.y >= 0 then
+        self.velocity.y = 0
+        self.platform_velocity.y = 0
+    end
+
+    self.velocity = consume_velocity(self.velocity, dt)
+    if self.gravity_enabled and not self.on_platform then
         self.velocity = self.velocity + (self.gravity * dt)
     end
 
-    local position = self.position + (self.velocity * dt)
+    self.platform_velocity = consume_velocity(self.platform_velocity, dt)
+
+    local position = self.position + (self.velocity * dt) + (self.platform_velocity * dt)
     self.position = position
 
     self.force = vec.zero()
-end
-
-function physics_body:update(dt)
-    if self.grounded and self.velocity.y >= 0 then
-        self.velocity.y = 0
-    end
-    self:position_update(dt)
 end
 
 function new_body(position, mass)
@@ -108,10 +118,12 @@ function new_body(position, mass)
         grounded = false,
         colliders = {},
         mass = mass,
+        friction = 1.0,
         shape_type = nil,
         reset_forces = function (self) self.force = 0 end,
         apply_force = function(self, force) self.force = self.force + force end,
         on_platform = false,
+        platform_velocity = vec.zero(),
         static_collisions_enabled = true,
         dynamic_collisions_enabled = true,
     }, physics_body)
@@ -239,18 +251,24 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies)
     local rectangles = table.filter(dynamic_bodies, function(r) return r.__shape == "rectangle" end)
     local should_recompute = #rectangles > 0
 
-    local bottom_body = table.find(rectangles, function(r) return r.position.y > body.position.y end)
-    body.on_platform = bottom_body ~= nil 
-    if body.on_platform then
-        body.on_platform = true
-        body.position.y = bottom_body.position.y - body.radius
-        if body.velocity.y > 0 then
-            body.velocity.y = 0
-        end
-        body.velocity.x = bottom_body.velocity.x
+    function poll_body(callable)
+        local part1, part2 = table.partition(rectangles, callable)
+        rectangles = part1
+        return part2[1]
     end
 
-    local top_body = table.find(rectangles, function(r) return r.position.y < body.position.y and body.position.x >= r.position.x and body.position.x <= r.position.x + r.width end)
+    local bottom_body = poll_body(function(r) return r.position.y > body.position.y end)
+    body.on_platform = bottom_body ~= nil 
+    if body.on_platform then
+        body.platform_velocity = bottom_body.velocity
+        body.position.y = bottom_body.position.y - body.radius
+    end
+
+    local top_body = poll_body(function(r)
+        return r.position.y < body.position.y
+            and body.position.x >= r.position.x
+            and body.position.x <= r.position.x + r.width
+        end)
     if top_body ~= nil then
         body.position.y = top_body.position.y + top_body.height + body.radius
         if body.velocity.y < 0 then
@@ -258,13 +276,16 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies)
         end
     end
 
-    local left_body = table.find(rectangles, function(r) return r.position.x < body.position.x and r.position.x + r.width < body.position.x end)
+    local left_body = poll_body(function(r)
+        return r.position.x < body.position.x
+            and r.position.x + r.width < body.position.x
+        end)
     if left_body ~= nil then
         body.position.x = left_body.position.x + left_body.width + body.radius
         body.velocity.x = 0
     end
 
-    local right_body = table.find(rectangles, function(r) return r.position.x > body.position.x end)
+    local right_body = poll_body(function(r) return r.position.x > body.position.x end)
     if right_body ~= nil then
         body.position.x = right_body.position.x - body.radius
         body.velocity.x = 0

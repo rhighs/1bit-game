@@ -10,11 +10,13 @@ local entity = {}
 
 function entity:update(dt)
     self.cycle:update(dt)
-    self.body.velocity.x = self.cycle:current() == 0 and 50 or -50
+    self.body.velocity = vec.v2(math.sin(rl.GetTime() * 1), math.cos(rl.GetTime() * 1)) * 100
     self.body:update(dt)
 end
 
 function entity:draw()
+    local vec_point = self.body.position + self.body.velocity
+    rl.DrawLine(self.body.position.x, self.body.position.y, vec_point.x, vec_point.y, rl.RED)
     rl.DrawRectangle(self.body.position.x, self.body.position.y, self.width, self.height, rl.GREEN)
 end
 
@@ -37,6 +39,7 @@ function platform.new(position, width, height)
     body.static_collisions_enabled = false
 
     return setmetatable({
+        starting_pos = position,
         body = body,
         height = height,
         width = width,

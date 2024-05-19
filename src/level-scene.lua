@@ -12,22 +12,6 @@ local entity = require "entity"
 
 local level_scene = {}
 
--- function create_entity(data)
---     if data.enemy_id == "ghost" then
---         return ghost.new(data.pos)
---     elseif data.enemy_id == "level-end" then
---         return interactable.new(data.pos, data.width, data.height, function()
---             return "level-completed"
---         end)
---     elseif data.enemy_id == "arm" then
---         return arm.new(data.pos)
---     elseif data.enemy_id == "chain-ball" then
---         return ball.new(data.pos)
---     end
---     error(util.pystr("unknown entity: ", data))
---     -- add more entities here
--- end
-
 function level_scene.new()
     return {
         name = "level",
@@ -46,25 +30,19 @@ function level_scene.new()
             self.do_game_over = false
             self.do_level_completed = false
             self.data = loader.load_level(require(data.level))
-            self.player = player_lib.new(self.data.level_start)
             self.level_bounds = self.data.level_bounds
+
+            self.player = player_lib.new(self.data.level_start)
+            physics.register_body(self.player.body)
+
             self.enemies = {}
             for _, e in ipairs(self.data.entities) do
                 local entt = entity.create_entity(e)
                 table.insert(self.enemies, entt)
-                physics.register_body(entt.body)
+                if entt.body ~= nil then
+                    physics.register_body(entt.body)
+                end
             end
-
-            -- local entt = entity.create_entity({
-            --     enemy_id = "platform",
-            --     pos = vec.v2(self.player.body.position.x, self.player.body.position.y - 32 * 4),
-            --     width = 100,
-            --     height = 20,
-            -- })
-            -- table.insert(self.enemies, entt)
-            -- physics.register_body(entt.body)
-
-            physics.register_body(self.player.body)
         end,
 
         destroy = function (self) physics.clear() end,
@@ -76,21 +54,18 @@ function level_scene.new()
         update = function(self, dt)
             self:check_game_over()
 
-            -- if rl.IsKeyDown(rl.KEY_T) then
-            --     self:color_swap()
-            -- end
-
             self.player:update(dt)
-            self.cam:retarget(vec.v2(
-                util.clamp(self.player:position().x, self.level_bounds.x + consts.VP.x/2, self.level_bounds.x + self.level_bounds.width - consts.VP.x/2),
-                util.clamp(self.player:position().y, self.level_bounds.y + consts.VP.y/2, self.level_bounds.y + self.level_bounds.height - consts.VP.y/2)
+
+            local level_size = vec.v2(self.level_bounds.width, self.level_bounds.height)
+            self.cam:retarget(vec.clamp(
+                self.player:position(),
+                self.level_bounds + consts.VP/2,
+                self.level_bounds + level_size - consts.VP/2
             ))
-            physics.check_collisions(self.data.ground, physics.bodies, dt)
-            -- self.cam:retarget(self.player:position())
 
             for _, e in ipairs(self.enemies) do
                 e:update(dt)
-                if self:check_bounds(e:get_hitbox()) then
+                if self:check_player_bounds(e:get_hitbox()) then
                     local res = e:player_collision(self.player:position())
                     if res == "game-over" then
                         self.do_game_over = true
@@ -99,21 +74,19 @@ function level_scene.new()
                     end
                 end
             end
+
+            physics.check_collisions(self.data.ground, physics.bodies, dt)
         end,
 
         check_game_over = function (self)
-            if not self:check_bounds(self.level_bounds) then
-                self:game_over()
+            if not self:check_player_bounds(self.level_bounds) then
+                self.do_game_over = true
                 return
             end
         end,
 
-        check_bounds = function (self, bounds)
+        check_player_bounds = function (self, bounds)
             return rl.CheckCollisionCircleRec(self.player:position(), self.player.body.radius, bounds)
-        end,
-
-        game_over = function (self)
-            self.do_game_over = true
         end,
 
         draw_at = function (self, grid, x, y)

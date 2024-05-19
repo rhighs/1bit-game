@@ -15,8 +15,8 @@ end
 function entity:state_pendulum(dt)
     local force = physics.GRAVITY.y * math.sin(self.angle)
     local accel = -force / self.radius
-    self.w = self.w + accel * dt*10
-    self.angle = self.angle + self.w * dt*10
+    self.w = self.w + accel * dt
+    self.angle = self.angle + self.w * dt
     self.bob_pos = self.pivot_pos + vec.v2(math.sin(self.angle), math.cos(self.angle)) * self.radius
 
     if self.angle < -math.pi/3 then
@@ -130,6 +130,7 @@ function ball.new(spawn_pos, ...)
     body.air_resistance_enabled = false
 
     body.collision_resolver = function (body, tiles)
+        print("chain ball resolver")
         -- going down?
         if body.old_pos.y >= body.position.y then
             return

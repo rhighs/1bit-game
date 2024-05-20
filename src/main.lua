@@ -12,7 +12,7 @@ local textures = require "textures"
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
-rl.SetTargetFPS(165)
+rl.SetTargetFPS(60)
 textures.load()
 player.load_textures()
 

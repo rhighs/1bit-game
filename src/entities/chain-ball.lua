@@ -26,7 +26,7 @@ function entity:state_pendulum(dt)
         local norm = vec.normalize(vec.rotate(self.pivot_pos - self.bob_pos, -math.pi/2))
         self.body.position = self.bob_pos
         self.body.velocity = vec.zero()
-        self.body:apply_force(vec.v2(norm.x * 500, norm.y * 1000))
+        self.body:apply_force(vec.v2(norm.x * 1000, norm.y * 2000))
         self.body.locked_ys = {}
     end
 end
@@ -153,6 +153,7 @@ function ball.new(spawn_pos, ...)
         body.velocity.y = -300
         body.locked_ys[tile.pos.y] = true
     end
+    body.dynamic_collision_resolver = nil
 
     return setmetatable({
         pivot_pos = spawn_pos,

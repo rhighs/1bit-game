@@ -40,30 +40,36 @@ function physics.check_collisions(grid, bodies, dt)
     end
 
     for i, first_body in ipairs(bodies) do
-        local dynamic_body_collisions = {}
-        for j, second_body in ipairs(bodies) do
-            if i ~= j then
-                local second_body = bodies[j]
-                local collding = check_body_collision(first_body, second_body)
-                if collding then
-                    table.insert(dynamic_body_collisions, second_body)
+        if first_body.dynamic_collisions_enabled then
+            local dynamic_body_collisions = {}
+            for j, second_body in ipairs(bodies) do
+                if i ~= j then
+                    local second_body = bodies[j]
+                    local collding = check_body_collision(first_body, second_body)
+                    if collding then
+                        table.insert(dynamic_body_collisions, second_body)
+                    end
                 end
             end
-        end
 
-        first_body.colliders = dynamic_body_collisions
-        first_body:resolve_dynamic_collisions(dynamic_body_collisions)
+            first_body.colliders = dynamic_body_collisions
+            first_body:resolve_dynamic_collisions(dynamic_body_collisions)
+        end
     end
 end
 
 local physics_body = {}
 
 function physics_body:resolve_static_collisions(static_bodies)
-    self.static_collision_resolver(self, static_bodies)
+    if self.static_collision_resolver ~= nil then
+        self.static_collision_resolver(self, static_bodies)
+    end
 end
 
 function physics_body:resolve_dynamic_collisions(dynamic_bodies)
-    self.dynamic_collision_resolver(self, dynamic_bodies)
+    if self.dynamic_collision_resolver ~= nil then
+        self.dynamic_collision_resolver(self, dynamic_bodies)
+    end
 end
 
 function physics_body:update(dt)
@@ -76,10 +82,8 @@ function physics_body:update(dt)
             air_resistance_force.y = 0
             acceleration = acceleration + (air_resistance_force * 10 / self.mass)
         end
-    
-        -- update positions
-        velocity = velocity + acceleration * dt
-        return velocity
+        acceleration = acceleration
+        return velocity + (acceleration * dt)
     end
 
     -- rob: avoid being rocketed downward when a platform you just dropeed off is descending
@@ -92,12 +96,16 @@ function physics_body:update(dt)
         self.platform_velocity.y = 0
     end
 
-    self.velocity = consume_velocity(self.velocity, dt)
+    local use_platform_vel = vec.length(self.platform_velocity) > 0.01
+    local cv_dt = (use_platform_vel and 0.5 or 1.0) * dt
+    if use_platform_vel then
+        self.platform_velocity = consume_velocity(self.platform_velocity, cv_dt)
+    end
+
+    self.velocity = consume_velocity(self.velocity, cv_dt)
     if self.gravity_enabled and not self.on_platform then
         self.velocity = self.velocity + (self.gravity * dt)
     end
-
-    self.platform_velocity = consume_velocity(self.platform_velocity, dt)
 
     self.old_pos = self.position
     self.position = self.position + (self.velocity * dt) + (self.platform_velocity * dt)

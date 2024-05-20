@@ -99,8 +99,8 @@ function physics_body:update(dt)
 
     self.platform_velocity = consume_velocity(self.platform_velocity, dt)
 
-    local position = self.position + (self.velocity * dt) + (self.platform_velocity * dt)
-    self.position = position
+    self.old_pos = self.position
+    self.position = self.position + (self.velocity * dt) + (self.platform_velocity * dt)
 
     self.force = vec.zero()
 end
@@ -109,6 +109,7 @@ function new_body(position, mass)
     physics_body.__index = physics_body
     return setmetatable({
         radius = r,
+        old_pos = position,
         position = position,
         velocity = vec.zero(),
         gravity = physics.GRAVITY,

@@ -26,7 +26,7 @@ function entity:state_pendulum(dt)
         local norm = vec.normalize(vec.rotate(self.pivot_pos - self.bob_pos, -math.pi/2))
         self.body.position = self.bob_pos
         self.body.velocity = vec.zero()
-        self.body:apply_force(vec.v2(norm.x * 1000, norm.y * 2000))
+        self.body:apply_force(vec.v2(norm.x * 500, norm.y * 1000))
         self.body.locked_ys = {}
     end
 end
@@ -129,8 +129,7 @@ function ball.new(spawn_pos, ...)
     local body = physics.new_circle(vec.zero(), 16, 1/10000)
     body.air_resistance_enabled = false
 
-    body.collision_resolver = function (body, tiles)
-        print("chain ball resolver")
+    body.static_collision_resolver = function (body, tiles)
         -- going down?
         if body.old_pos.y >= body.position.y then
             return

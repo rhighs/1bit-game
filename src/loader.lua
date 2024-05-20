@@ -3,25 +3,12 @@ loader = {}
 local util = require "util"
 local vec = require "vec"
 
-function loader.find_layer(data, name)
-    for _, l in ipairs(data.layers) do
-        if l.name == name then
-            return l
-        end
-    end
-    GAME_LOG("layer not found: ", name)
-    return nil
+function find_layer(data, name)
+    return table.find(data.layers, function (l) return l.name == name end)
 end
 
 function find_tileset(data, name)
-    GAME_LOG("searching", name)
-    for _, t in ipairs(data.tilesets) do
-        if t.name == name then
-            return t
-        end
-    end
-    GAME_LOG("tileset not found: ", name)
-    return nil
+    return table.find(data.tilesets, function (l) return l.name == name end)
 end
 
 function load_textures(data, tilesets)
@@ -59,6 +46,7 @@ function read_objects(layer)
     local objs = {}
     for k, v in ipairs(layer.objects) do
         table.insert(objs, {
+            id = k,
             pos = vec.v2(v.x, v.y),
             enemy_id = v.name,
             width = v.width,
@@ -88,11 +76,11 @@ end
 
 function loader.load_level(data)
     local textures = load_textures(data, { "ground", "decors" })
-    local ground = read_tiles(loader.find_layer(data, "ground"))
-    local decor = read_tiles(loader.find_layer(data, "decor"))
-    local entities = read_objects(loader.find_layer(data, "entities"))
+    local ground = read_tiles(find_layer(data, "ground"))
+    local decor = read_tiles(find_layer(data, "decor"))
+    local entities = read_objects(find_layer(data, "entities"))
 
-    local level_start_obj = loader.find_layer(data, "level-start").objects[1]
+    local level_start_obj = find_layer(data, "level-start").objects[1]
     if level_start_obj == nil then
         error("no level start object are defined for this level!")
     end

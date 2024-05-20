@@ -22,9 +22,7 @@ function level_scene.new()
         level_bounds = nil,
         do_game_over = false,
         do_level_completed = false,
-
-        enemies = {},
-        interactables = {},
+        entities = {},
 
         init = function (self, data)
             self.do_game_over = false
@@ -35,14 +33,14 @@ function level_scene.new()
             self.player = player_lib.new(self.data.level_start)
             physics.register_body(self.player.body)
 
-            self.enemies = {}
-            for _, e in ipairs(self.data.entities) do
-                local entt = entity.create_entity(e)
-                table.insert(self.enemies, entt)
-                if entt.body ~= nil then
-                    physics.register_body(entt.body)
-                end
-            end
+            self.entities = {}
+            -- for _, e in ipairs(self.data.entities) do
+            --     local entt = entity.create_entity(e)
+            --     table.insert(self.entities, entt)
+            --     if entt.body ~= nil then
+            --         physics.register_body(entt.body)
+            --     end
+            -- end
         end,
 
         destroy = function (self) physics.clear() end,
@@ -63,7 +61,34 @@ function level_scene.new()
                 self.level_bounds + level_size - consts.VP/2
             ))
 
-            for _, e in ipairs(self.enemies) do
+            -- despawn entities when they stay off-screen for too much time
+            local to_despawn = table.map(
+                table.filter(self.entities, function (e)
+                    return e.offscreen_start >= 400
+                end),
+                function (e) return e.id end
+            )
+            for _, id in ipairs(to_despawn) do
+                self.entities[id] = nil
+            end
+
+            -- spawn new entities when they come inside the camera
+            local new_entities = table.filter(
+                self.data.entities,
+                function (e)
+                    return self.entities[e.id] == nil
+                       and self.cam:is_inside(util.RecV(e.pos, vec.v2(e.width, e.height)))
+                end
+            )
+            for _, e in ipairs(new_entities) do
+                local entt = entity.create_entity(e)
+                self.entities[e.id] = entt
+                if entt.body ~= nil then
+                    physics.register_body(entt.body)
+                end
+            end
+
+            for _, e in pairs(self.entities) do
                 e:update(dt)
                 if self:check_player_bounds(e:get_hitbox()) then
                     local res = e:player_collision(self.player:position())
@@ -72,6 +97,11 @@ function level_scene.new()
                     elseif res == "level-completed" then
                         self.do_level_completed = true
                     end
+                end
+                if self.cam:is_inside(e:get_draw_box()) then
+                    e.offscreen_start = -1
+                else
+                    e.offscreen_start = e.offscreen_start + 1
                 end
             end
 
@@ -148,7 +178,7 @@ function level_scene.new()
             self.player:draw(dt)
             self:draw_simple_grid(self.data.ground)
 
-            for _, e in ipairs(self.enemies) do
+            for _, e in pairs(self.entities) do
                 if self.cam:is_inside(e:get_draw_box()) then
                     e:draw()
                     if self.debug_mode then

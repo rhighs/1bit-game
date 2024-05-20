@@ -19,7 +19,10 @@ function entity.create_entity(data)
     if lib == nil then
         error(util.pystr("unknown entity: ", data))
     end
-    return lib.new(data.pos, data.width, data.height, data)
+    local entt = lib.new(data.pos, data.width, data.height, data)
+    entt.offscreen_start = -1
+    entt.id = data.id
+    return entt
 end
 
 return entity

@@ -9,6 +9,7 @@ local game_over = require "game-over-scene"
 local level_completed = require "level-completed-scene"
 local player = require "player"
 local textures = require "textures"
+local event_queue = require "event_queue"
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
@@ -16,12 +17,13 @@ rl.SetTargetFPS(60)
 textures.load()
 player.load_textures()
 
+local scene_events = event_queue.new()
 local scenes = {
     list = {
-        ["start"] = start_screen_controller.new(),
-        ["level"] = level_scene.new(),
-        ["levelcompleted"] = level_completed.new(1.0),
-        ["gameover"] = game_over.new(1.0)
+        ["start"] = start_screen_controller.new(scene_events),
+        ["level"] = level_scene.new(scene_events),
+        ["levelcompleted"] = level_completed.new(scene_events, 1.0),
+        ["gameover"] = game_over.new(scene_events, 1.0)
     },
     cur = "start",
 
@@ -32,16 +34,17 @@ while not rl.WindowShouldClose() do
     local dt = rl.GetFrameTime()
 
     scenes:get():update(dt)
-    next_scene = scenes:get():should_change()
-    if next_scene ~= nil then
+
+    local ev = scene_events:recv()
+    if ev ~= nil then
         scenes:get():destroy()
-        if next_scene.name == "/quit" then
+        if ev.name == "/quit" then
             GAME_LOG("/quit received...")
             os.exit(0)
         end
 
-        scenes.cur = next_scene.name
-        scenes:get():init(next_scene.data)
+        scenes.cur = ev.name
+        scenes:get():init(ev.data)
     end
 
 	rl.BeginDrawing()

@@ -7,10 +7,7 @@ local cooldown = require "cooldown"
 local start_screen = {}
 
 function start_screen:init() end
-function start_screen:destroy()
-    self.should_start = false
-    self.should_quit = false
-end
+function start_screen:destroy() end
 
 function start_screen:update(dt)
     if self.counter == 50 then
@@ -40,21 +37,14 @@ function start_screen:draw()
     self.options_container:draw()
 end
 
-function start_screen:should_change()
-    if self.should_quit then return { name = "/quit" } end
-    if self.should_start then return { name = "level", data = { level = "leveldata/level3" } } end
-    return nil
-end
-
-function start_screen.new()
+function start_screen.new(scene_queue)
     start_screen.__index = start_screen
 
     local obj = {
         name = "start",
         cursor = rl.LoadTexture("assets/cursor.png"),
         counter = 0,
-        should_start = false,
-        should_quit = false,
+        scene_queue = scene_queue,
 
         options_up = cooldown.make_cooled(function (self)
             self.options_container.child:previous()
@@ -78,7 +68,7 @@ function start_screen.new()
                     label = "START",
                     callback = function ()
                         GAME_LOG("starting level...")
-                        obj.should_start = true
+                        obj.scene_queue:send({ name = "level", data = { level = "leveldata/level3" } })
                     end,
                 },
                 {
@@ -87,9 +77,9 @@ function start_screen.new()
                 },
                 {
                     label = "QUIT",
-                    callback = function () 
+                    callback = function ()
                         GAME_LOG("quitting game...")
-                        obj.should_quit = true
+                        obj.scene_queue:send({ name = "/quit" })
                     end,
                 },
             }

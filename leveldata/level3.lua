@@ -514,7 +514,7 @@ return {
         },
         {
           id = 85,
-          name = "chain-ball",
+          name = "arm",
           type = "",
           shape = "rectangle",
           x = 448,

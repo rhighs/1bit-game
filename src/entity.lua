@@ -14,12 +14,12 @@ for i = 0, files.count - 1 do
     end
 end
 
-function entity.create_entity(data)
+function entity.create_new(world, data)
     local lib = libs[data.enemy_id]
     if lib == nil then
         error(util.pystr("unknown entity: ", data))
     end
-    local entt = lib.new(data.pos, data.width, data.height, data)
+    local entt = lib.new(world, data.pos, data.width, data.height, data)
     entt.offscreen_start = -1
     entt.id = data.id
     return entt

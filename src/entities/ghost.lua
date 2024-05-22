@@ -34,16 +34,17 @@ function entity:get_hitbox()
 end
 
 function entity:player_collision(pos)
-    return "game-over"
+    self.world:send_scene_event("gameover")
 end
 
-function ghost.new(spawn_pos, ...)
+function ghost.new(world, spawn_pos, ...)
     entity.__index = entity
     return setmetatable({
         start_pos = spawn_pos,
         pos = spawn_pos - vec.v2(0, 32),
         n = 0,
         dir = -1,
+        world = world
     }, entity)
 end
 

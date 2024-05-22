@@ -65,7 +65,7 @@ function world.new(data, scene_queue)
             end
         )
         for _, e in ipairs(new_entities) do
-            local entt = entity.create_entity(e)
+            local entt = entity.create_new(self, e)
             self.entities[e.id] = entt
             if entt.body ~= nil then
                 physics.register_body(entt.body)
@@ -76,12 +76,7 @@ function world.new(data, scene_queue)
             e:update(dt)
             e.offscreen_start = self.cam:is_inside(e:get_draw_box()) and -1 or e.offscreen_start + 1
             if self:check_player_bounds(e:get_hitbox()) then
-                local res = e:player_collision(self.player:position())
-                if res == "game-over" then
-                    self.scene_queue:send({ name = "gameover" })
-                elseif res == "level-completed" then
-                    self.scene_queue:send({ name = "levelcompleted" })
-                end
+                e:player_collision(self.player:position())
             end
         end
     end
@@ -153,8 +148,16 @@ function world.new(data, scene_queue)
     end
 
     -- public api functions:
-    function world:spawn()
-        -- not implemented yet
+    function world:spawn(data)
+        util.pyprint("spawning new entt, data =", data)
+        local new_id = #self.entities + 1
+        data.id = new_id
+        local entt = entity.create_new(self, data)
+        self.entities[new_id] = entt
+        if entt.body ~= nil then
+            print("registering")
+            physics.register_body(entt.body)
+        end
     end
 
     function world:send_scene_event(name)

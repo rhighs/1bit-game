@@ -44,7 +44,7 @@ end
 function entity:player_collision(pos)
 end
 
-function pendulum.new(pivot_pos, bob_radius, rod_length, start_angle)
+function pendulum.new(world, pivot_pos, bob_radius, rod_length, start_angle)
     entity.__index = entity
 
     return setmetatable({

@@ -31,7 +31,7 @@ end
 function entity:player_collision(pos)
 end
 
-function platform.new(position, width, height)
+function platform.new(world, position, width, height)
     entity.__index = entity
     local body = physics.new_rectangle(position, width, height, 1.0)
     body.gravity_enabled = false

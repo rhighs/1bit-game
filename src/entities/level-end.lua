@@ -2,9 +2,9 @@ local level_end = {}
 
 local interactable = require "interactable-entity"
 
-function level_end.new(pos, width, height)
+function level_end.new(world, pos, width, height)
     return interactable.new(pos, width, height, function()
-        return "level-completed"
+        world:send_scene_event("levelcompleted")
     end)
 end
 

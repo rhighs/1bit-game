@@ -2,6 +2,7 @@ local textures = require "textures"
 local util = require "util"
 local vec = require "vec"
 local physics = require "physics"
+local event_queue = require "event_queue"
 
 local arm = {}
 
@@ -13,6 +14,8 @@ function arm.new(world, spawn_pos, ...)
         angle = 0,
         radius = 128,
         state = "pendulum",
+        event_queue = event_queue.new(),
+        world = world
     }
 
     function arm:update(dt)
@@ -38,7 +41,8 @@ function arm.new(world, spawn_pos, ...)
                 height = 0,
                 init_force = vec.v2(norm.x * 1000, norm.y * 2000),
                 angle = self.angle,
-                radius = self.radius
+                radius = self.radius,
+                arm_queue = self.event_queue
             })
         end
     end
@@ -51,7 +55,8 @@ function arm.new(world, spawn_pos, ...)
                 self.angle = 0
             end
         end
-        if self.time > 200 then
+        local ev = self.event_queue:recv()
+        if ev == 'chain-ball-despawned' then
             self.state = "pendulum"
             self.w = 3.5
             self.angle = 0
@@ -102,14 +107,40 @@ function arm.new(world, spawn_pos, ...)
     end
 
     function arm:get_draw_box()
-        return util.Rec(self.bob_pos.x, self.bob_pos.y, 32, 5*32)
+        if self.state == "pendulum" then
+            local left_pos  = math.min(self.bob_pos.x, self.pivot_pos.x)
+            local xmin = left_pos - (left_pos == self.bob_pos.x and 55 or 16)
+
+            local right_pos = math.max(self.bob_pos.x, self.pivot_pos.x)
+            local xmax = right_pos + (right_pos == self.bob_pos.x and 55 or 16)
+
+            local up_pos  = math.min(self.bob_pos.y, self.pivot_pos.y)
+            local ymin = up_pos - (up_pos == self.bob_pos.y and 50 or 16)
+
+            local down_pos = math.max(self.bob_pos.y, self.pivot_pos.y)
+            local ymax = down_pos + (down_pos == self.bob_pos.y and 50 or 16)
+
+            return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
+        else
+            local end_pos = self.pivot_pos + vec.v2(math.sin(self.angle), math.cos(self.angle)) * 64
+            local xmin = math.min(end_pos.x, self.pivot_pos.x - 16)
+            local xmax = math.max(end_pos.x, self.pivot_pos.x + 16)
+            local ymin = math.min(end_pos.y, self.pivot_pos.y - 16)
+            local ymax = math.max(end_pos.y, self.pivot_pos.y + 16)
+            return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
+        end
     end
 
     function arm:get_hitbox()
-        return util.Rec(0, 0, 1, 1)
+        if self.state == "pendulum" then
+            return util.Rec(self.bob_pos.x - 55/2, self.bob_pos.y - 50/2, 55, 50)
+        else
+            return util.Rec(0, 0, 0, 0)
+        end
     end
 
     function arm:player_collision(pos)
+        self.world:send_scene_event("gameover")
     end
 
     return arm

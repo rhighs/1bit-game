@@ -46,13 +46,19 @@ function world.new(data, scene_queue)
 
         physics.check_collisions(self.ground, physics.bodies, dt)
         -- despawn entities when they stay off-screen for too much time
+        -- or if they've fallen inside pits
         local to_despawn = table.map(
             table.filter(self.entities, function (e)
+                local p = e:get_draw_box()
                 return e.offscreen_start >= 400
+                    or p.y > self.bounds.y + self.bounds.height
             end),
             function (e) return e.id end
         )
         for _, id in ipairs(to_despawn) do
+            if self.entities[id].on_despawn ~= nil then
+                self.entities[id]:on_despawn()
+            end
             self.entities[id] = nil
         end
 
@@ -149,13 +155,11 @@ function world.new(data, scene_queue)
 
     -- public api functions:
     function world:spawn(data)
-        util.pyprint("spawning new entt, data =", data)
         local new_id = #self.entities + 1
         data.id = new_id
         local entt = entity.create_new(self, data)
         self.entities[new_id] = entt
         if entt.body ~= nil then
-            print("registering")
             physics.register_body(entt.body)
         end
     end

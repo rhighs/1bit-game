@@ -10,6 +10,9 @@ function ball.new(world, spawn_pos, _w, _h, data)
         body = physics.new_circle(vec.zero(), 16, 1/10000),
         angle = data.angle,
         radius = data.radius,
+        arm_queue = data.arm_queue,
+        num_chains = math.ceil((data.radius - (64 - 16) - 25) / 16),
+        world = world
     }
 
     ball.body.position = spawn_pos
@@ -52,8 +55,7 @@ function ball.new(world, spawn_pos, _w, _h, data)
     end
 
     function ball:draw()
-        local num_chains = math.ceil((self.radius - (64 - 16) - 25) / 16)
-        for i = 1, num_chains+1 do
+        for i = 1, self.num_chains+1 do
             local pos = vec.v2(-math.sin(self.angle), -math.cos(self.angle)) * ((i-1)*16)
             rl.DrawTexturePro(
                 textures.chain,
@@ -75,14 +77,26 @@ function ball.new(world, spawn_pos, _w, _h, data)
     end
 
     function ball:get_draw_box()
-        return util.RecV(self.body.position, vec.v2(32, 5*32))
+        local end_pos = self.body.position
+                      - vec.v2(math.sin(self.angle), math.cos(self.angle))
+                      * self.radius
+        local xmin = math.min(end_pos.x, self.body.position.x - 55)
+        local xmax = math.max(end_pos.x, self.body.position.x + 55)
+        local ymin = math.min(end_pos.y, self.body.position.y - 50)
+        local ymax = math.max(end_pos.y, self.body.position.y + 50)
+        return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
     end
 
     function ball:get_hitbox()
-        return util.Rec(0, 0, 1, 1)
+        return util.Rec(self.body.position.x - 25/2, self.body.position.y - 20/2, 25, 20)
     end
 
     function ball:player_collision(pos)
+        self.world:send_scene_event("gameover")
+    end
+
+    function ball:on_despawn()
+        self.arm_queue:send("chain-ball-despawned")
     end
 
     return ball

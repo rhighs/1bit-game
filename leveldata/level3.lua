@@ -10,7 +10,7 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 87,
+  nextobjectid = 89,
   properties = {},
   tilesets = {
     {
@@ -162,7 +162,7 @@ return {
       },
       properties = {},
       wangsets = {},
-      tilecount = 4,
+      tilecount = 5,
       tiles = {
         {
           id = 0,
@@ -185,6 +185,12 @@ return {
         {
           id = 3,
           image = "../assets/ghost-arm.png",
+          width = 64,
+          height = 64
+        },
+        {
+          id = 4,
+          image = "../assets/spider.png",
           width = 64,
           height = 64
         }
@@ -513,16 +519,16 @@ return {
           properties = {}
         },
         {
-          id = 85,
-          name = "arm",
+          id = 88,
+          name = "spider",
           type = "",
           shape = "rectangle",
-          x = 448,
-          y = 1248,
-          width = 32,
-          height = 32,
+          x = 320,
+          y = 1408,
+          width = 64,
+          height = 64,
           rotation = 0,
-          gid = 18,
+          gid = 22,
           visible = true,
           properties = {}
         }

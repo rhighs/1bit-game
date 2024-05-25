@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="200" height="50" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="87">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="200" height="50" tilewidth="32" tileheight="32" infinite="0" nextlayerid="10" nextobjectid="89">
  <tileset firstgid="1" name="ground" tilewidth="33" tileheight="32" tilecount="6" columns="0">
   <grid orientation="orthogonal" width="1" height="1"/>
   <tile id="0">
@@ -95,7 +95,7 @@
   <object id="80" template="ghost.tx" x="2208" y="1248"/>
   <object id="81" template="ghost.tx" x="2016" y="1120"/>
   <object id="82" template="ghost.tx" x="1760" y="960"/>
-  <object id="85" name="arm" gid="18" x="448" y="1248" width="32" height="32"/>
+  <object id="88" name="spider" gid="22" x="320" y="1408" width="64" height="64"/>
  </objectgroup>
  <layer id="3" name="decor" width="200" height="50">
   <data encoding="csv">

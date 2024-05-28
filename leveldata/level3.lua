@@ -10,7 +10,7 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 89,
+  nextobjectid = 90,
   properties = {},
   tilesets = {
     {
@@ -143,7 +143,7 @@ return {
       name = "entities",
       firstgid = 18,
       class = "",
-      tilewidth = 96,
+      tilewidth = 192,
       tileheight = 96,
       spacing = 0,
       margin = 0,
@@ -191,8 +191,8 @@ return {
         {
           id = 4,
           image = "../assets/spider.png",
-          width = 64,
-          height = 64
+          width = 192,
+          height = 80
         }
       }
     }
@@ -519,14 +519,14 @@ return {
           properties = {}
         },
         {
-          id = 88,
+          id = 89,
           name = "spider",
           type = "",
           shape = "rectangle",
           x = 320,
-          y = 1408,
-          width = 64,
-          height = 64,
+          y = 1312,
+          width = 192,
+          height = 80,
           rotation = 0,
           gid = 22,
           visible = true,

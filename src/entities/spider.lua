@@ -8,14 +8,14 @@ local textures = require "textures"
 function spider.new(world, spawn_pos, width, height, data)
     local spider = {
         world = world,
-        pos = spawn_pos - vec.v2(0, 80),
+        pos = spawn_pos,
         state = "idle",
         timer = 0,
         target_pos = -1,
         anim_frame = 0
     }
 
-    local orig_y = spawn_pos.y - 80
+    local orig_y = spawn_pos.y
     spider.upper_bound = 0
     local x = math.floor(spider.pos.x / 32)
     for y = math.floor(spider.pos.y/32), 0, -1 do
@@ -87,7 +87,7 @@ function spider.new(world, spawn_pos, width, height, data)
     end
 
     function spider:get_draw_box()
-        return util.RecV(self.pos, vec.v2(textures.spider.width, textures.spider.height))
+        return util.RecV(self.pos, vec.v2(64, textures.spider.height))
     end
 
     function spider:get_hitbox()

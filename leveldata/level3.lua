@@ -10,7 +10,7 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 90,
+  nextobjectid = 91,
   properties = {},
   tilesets = {
     {
@@ -143,12 +143,12 @@ return {
       name = "entities",
       firstgid = 18,
       class = "",
-      tilewidth = 192,
+      tilewidth = 96,
       tileheight = 96,
       spacing = 0,
       margin = 0,
       columns = 0,
-      objectalignment = "unspecified",
+      objectalignment = "topleft",
       tilerendersize = "tile",
       fillmode = "stretch",
       tileoffset = {
@@ -162,7 +162,7 @@ return {
       },
       properties = {},
       wangsets = {},
-      tilecount = 5,
+      tilecount = 7,
       tiles = {
         {
           id = 0,
@@ -189,10 +189,36 @@ return {
           height = 64
         },
         {
-          id = 4,
-          image = "../assets/spider.png",
-          width = 192,
+          id = 5,
+          image = "../assets/spider3.png",
+          width = 64,
           height = 80
+        },
+        {
+          id = 6,
+          image = "../assets/spider2.png",
+          width = 64,
+          height = 80
+        },
+        {
+          id = 7,
+          image = "../assets/spider1.png",
+          width = 64,
+          height = 80,
+          animation = {
+            {
+              tileid = 7,
+              duration = 100
+            },
+            {
+              tileid = 6,
+              duration = 100
+            },
+            {
+              tileid = 5,
+              duration = 100
+            }
+          }
         }
       }
     }
@@ -519,16 +545,16 @@ return {
           properties = {}
         },
         {
-          id = 89,
+          id = 90,
           name = "spider",
           type = "",
           shape = "rectangle",
           x = 320,
-          y = 1312,
-          width = 192,
+          y = 1216,
+          width = 64,
           height = 80,
           rotation = 0,
-          gid = 22,
+          gid = 25,
           visible = true,
           properties = {}
         }

@@ -37,6 +37,7 @@ function world.new(data, scene_queue)
 
         self.player:update(dt)
 
+        local old_cam = self.cam:clone()
         local level_size = vec.v2(self.bounds.width, self.bounds.height)
         self.cam:retarget(vec.clamp(
             self.player:position(),
@@ -45,6 +46,7 @@ function world.new(data, scene_queue)
         ))
 
         physics.check_collisions(self.ground, physics.bodies, dt)
+
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
         local to_despawn = table.map(
@@ -56,6 +58,7 @@ function world.new(data, scene_queue)
             function (e) return e.id end
         )
         for _, id in ipairs(to_despawn) do
+            GAME_LOG("despawning entity with id =", id)
             if self.entities[id].on_despawn ~= nil then
                 self.entities[id]:on_despawn()
             end
@@ -68,9 +71,11 @@ function world.new(data, scene_queue)
             function (e)
                 return self.entities[e.id] == nil
                    and self.cam:is_inside(util.RecV(e.pos, vec.v2(e.width, e.height)))
+                   and not old_cam:is_inside(util.RecV(e.pos, vec.v2(e.width, e.height)))
             end
         )
         for _, e in ipairs(new_entities) do
+            GAME_LOG("spawning new entity with id =", e.id)
             local entt = entity.create_new(self, e)
             self.entities[e.id] = entt
             if entt.body ~= nil then

@@ -11,6 +11,15 @@ function camera.new(screen_size, start_pos)
         debug_counter = 0,
 
         get = function (self) return self.camera end,
+        position = function (self) return self.camera.target end,
+
+        clone = function (self)
+            local c = camera.new(screen_size, start_pos)
+            c.camera.target = self.camera.target
+            c.camera.rotation = self.camera.rotation
+            c.camera.zoom = self.camera.zoom
+            return c
+        end,
 
         retarget = function (self, target) self.camera.target = target end,
 

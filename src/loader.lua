@@ -32,8 +32,9 @@ function read_tiles(layer)
             local id = layer.data[(y - 1) * layer.width + x]
             if id ~= nil and id ~= 0 then
                 data[y-1][x-1] = {
-                    flip_horz = bit.band(id, 0x80000000) == 0 and 1 or -1,
-                    flip_vert = bit.band(id, 0x40000000) == 0 and 1 or -1,
+                    flip_horz = bit.band(id, 0x80000000) ~= 0,
+                    flip_vert = bit.band(id, 0x40000000) ~= 0,
+                    flip_diag = bit.band(id, 0x20000000) ~= 0,
                     gid = bit.band(id, 0xfffffff),
                 }
             end

@@ -114,12 +114,43 @@ function world.new(data, scene_queue)
         if texture == nil then
             error(util.pystr("trying to draw tex id =", tile_info.gid, "at pos = (", x, y, ")"))
         end
-        local y_offset = texture.height / 32 - 1
-        rl.DrawTextureRec(
+
+        local rotation = 0.0
+        local origin = vec.v2(texture.width, texture.height)/2
+        local source_rec = util.Rec(0, 0, texture.width, texture.height)
+        local y_offset = texture.height/32 - 1
+        local dest_rec = util.Rec(
+            x           *32 + origin.x,
+            (y-y_offset)*32 + origin.y,
+            texture.width, texture.height
+        )
+
+        local flip_diag, flip_vert, flip_horz =
+            tile_info.flip_diag, tile_info.flip_vert, tile_info.flip_horz
+        if flip_diag and flip_vert and flip_horz then
+            source_rec.width = -source_rec.width
+            rotation = 90.0
+        elseif flip_diag and flip_vert then
+            rotation = -90.0
+        elseif flip_diag and flip_horz then
+            rotation = 90.0
+        elseif flip_vert and flip_horz then
+            rotation = 180.0
+        elseif flip_diag then
+            source_rec.height = -source_rec.height
+            rotation = 90.0
+        elseif flip_vert then
+            source_rec.height = -source_rec.height
+        elseif flip_horz then
+            source_rec.width = -source_rec.width
+        end
+
+        rl.DrawTexturePro(
             texture,
-            util.Rec(0, 0, texture.width  * tile_info.flip_horz,
-                           texture.height * tile_info.flip_vert),
-            vec.v2(x, y - y_offset) * 32,
+            source_rec,
+            dest_rec,
+            origin,
+            rotation,
             rl.WHITE
         )
     end

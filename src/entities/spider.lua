@@ -2,7 +2,6 @@ local spider = {}
 
 local util = require "util"
 local vec = require "vec"
-local physics = require "physics"
 local textures = require "textures"
 
 function spider.new(world, spawn_pos, width, height, data)
@@ -35,8 +34,6 @@ function spider.new(world, spawn_pos, width, height, data)
             break
         end
     end
-
-    print("upper =", spider.upper_bound, "lower =", spider.lower_bound)
 
     function spider:update(dt)
         self.timer = self.timer + 1

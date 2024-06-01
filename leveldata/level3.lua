@@ -1,7 +1,8 @@
 return {
-  version = "1.5",
+  version = "1.10",
   luaversion = "5.1",
-  tiledversion = "1.8.2",
+  tiledversion = "1.10.2",
+  class = "",
   orientation = "orthogonal",
   renderorder = "right-down",
   width = 200,
@@ -9,18 +10,21 @@ return {
   tilewidth = 32,
   tileheight = 32,
   nextlayerid = 10,
-  nextobjectid = 96,
+  nextobjectid = 97,
   properties = {},
   tilesets = {
     {
       name = "ground",
       firstgid = 1,
+      class = "",
       tilewidth = 33,
       tileheight = 32,
       spacing = 0,
       margin = 0,
       columns = 0,
       objectalignment = "unspecified",
+      tilerendersize = "tile",
+      fillmode = "stretch",
       tileoffset = {
         x = 0,
         y = 0
@@ -75,12 +79,15 @@ return {
     {
       name = "decors",
       firstgid = 7,
+      class = "",
       tilewidth = 96,
       tileheight = 96,
       spacing = 0,
       margin = 0,
       columns = 0,
       objectalignment = "unspecified",
+      tilerendersize = "tile",
+      fillmode = "stretch",
       tileoffset = {
         x = 0,
         y = 0
@@ -165,12 +172,15 @@ return {
     {
       name = "entities",
       firstgid = 43,
+      class = "",
       tilewidth = 96,
       tileheight = 96,
       spacing = 0,
       margin = 0,
       columns = 0,
       objectalignment = "topleft",
+      tilerendersize = "tile",
+      fillmode = "stretch",
       tileoffset = {
         x = 0,
         y = 0
@@ -182,7 +192,7 @@ return {
       },
       properties = {},
       wangsets = {},
-      tilecount = 7,
+      tilecount = 8,
       tiles = {
         {
           id = 0,
@@ -239,6 +249,12 @@ return {
               duration = 100
             }
           }
+        },
+        {
+          id = 8,
+          image = "../assets/candle-ghost-tiled.png",
+          width = 32,
+          height = 34
         }
       }
     }
@@ -252,6 +268,7 @@ return {
       height = 50,
       id = 1,
       name = "ground",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -318,6 +335,7 @@ return {
       draworder = "topdown",
       id = 7,
       name = "entities",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -631,6 +649,20 @@ return {
           gid = 43,
           visible = true,
           properties = {}
+        },
+        {
+          id = 96,
+          name = "ghost-candle",
+          type = "",
+          shape = "rectangle",
+          x = 256,
+          y = 1376,
+          width = 32,
+          height = 34,
+          rotation = 0,
+          gid = 51,
+          visible = true,
+          properties = {}
         }
       }
     },
@@ -642,6 +674,7 @@ return {
       height = 50,
       id = 3,
       name = "decor",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,
@@ -708,6 +741,7 @@ return {
       draworder = "topdown",
       id = 9,
       name = "level-start",
+      class = "",
       visible = true,
       opacity = 1,
       offsetx = 0,

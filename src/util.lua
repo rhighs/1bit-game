@@ -73,4 +73,8 @@ function util.clamp(x, a, b)
     return math.max(math.min(b, x), a)
 end
 
+function util.random_float(min, max)
+    return rl.Lerp(min, max, math.random())
+end
+
 return util

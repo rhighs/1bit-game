@@ -7,22 +7,27 @@ local ghost_candle = {}
 function ghost_candle.new(world, spawn_pos)
     local ghost = {
         world = world,
-        pos = spawn_pos,
+        pos = vec.copy(spawn_pos),
         candle_frame = 0,
         ghost_frame = 0,
         timer = 0,
         state = "moving",
     }
 
+    local min = 2e64
+    local max = -2e64
+
     function ghost:update(dt)
         self.timer = self.timer + 1
         self.candle_frame = math.floor(self.timer / 8) % 4
         if self.state == "moving" then
             self.ghost_frame  = math.floor(self.timer / 8) % 2
-            self.pos.y = spawn_pos.y + math.cos(self.timer / 8)
-            if self.timer > 20 then
+            local old_y = self.pos.y
+            self.pos.y = spawn_pos.y + math.sin(self.timer / 8) * 16
+            if self.timer > 100 and old_y > spawn_pos.y and self.pos.y < spawn_pos.y then
                 self.state = "stop"
                 self.timer = 0
+                self.pos.y = spawn_pos.y
             end
         elseif self.state == "stop" then
             if self.timer > 50 then
@@ -57,13 +62,23 @@ function ghost_candle.new(world, spawn_pos)
     end
 
     function ghost:spawn_fireballs()
+        local positions = {
+            self.pos + vec.v2(0, 6),
+            self.pos + vec.v2(22, 0),
+            self.pos + vec.v2(51, 6)
+        }
+        local angle_bounds = { { 67, 158 }, { 45, 135 }, { 22.5, 112 } }
         for i = 1, 3 do
-            local angle = util.random_float(math.pi/4, 3*math.pi/4)
+            local angle_bound = angle_bounds[i]
+            local angle = util.random_float(
+                math.rad(angle_bound[1]),
+                math.rad(angle_bound[2])
+            )
             local v = vec.v2(math.cos(angle), math.sin(angle))
             print("angle =", math.deg(angle), "v =", v)
             self.world:spawn({
                 enemy_id = "fireball",
-                pos = self.pos,
+                pos = positions[i],
                 width = 0, height = 0, -- both useless
                 init_force = vec.v2(v.x * 1000, -v.y * 1500)
             })

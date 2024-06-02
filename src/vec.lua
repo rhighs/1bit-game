@@ -13,6 +13,8 @@ function vec.rotate(v, angle) return rl.Vector2Rotate(v, angle) end
 function vec.dot(v1, v2) return rl.Vector2DotProduct(v1, v2) end
 function vec.pow2(v) return vec.v2(math.pow(v.x, 2), math.pow(v.y, 2)) end
 function vec.clamp(v, a, b) return vec.v2(util.clamp(v.x, a.x, b.x), util.clamp(v.y, a.y, b.y)) end
+function vec.copy(v) return vec.v2(v.x, v.y) end
+
 function vec.draw(v, o, c)
     o, c = o or vec.zero(), c or rl.RED
     local d, od = v, o + v

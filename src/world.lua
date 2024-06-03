@@ -113,6 +113,13 @@ function world_lib.new(data, scene_queue)
         if tile_info == nil then
             return
         end
+
+        -- rob: hide platform paths
+        if tile_info.properties ~= nil and
+        (tile_info.properties.ppath_point or tile_info.properties.ppath_decor) then
+            return
+        end
+
         local texture = data.textures[tile_info.gid]
         if texture == nil then
             error(util.pystr("trying to draw tex id =", tile_info.gid, "at pos = (", x, y, ")"))

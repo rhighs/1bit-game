@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.2" name="entities" tilewidth="96" tileheight="96" tilecount="8" columns="0" objectalignment="topleft">
+<tileset version="1.8" tiledversion="1.8.2" name="entities" tilewidth="96" tileheight="96" tilecount="9" columns="0" objectalignment="topleft">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image width="32" height="32" source="../assets/ghost.png"/>
@@ -29,5 +29,8 @@
  </tile>
  <tile id="8">
   <image width="32" height="34" source="../assets/candle-ghost-tiled.png"/>
+ </tile>
+ <tile id="9">
+  <image width="64" height="12" source="../assets/moving-platform.png"/>
  </tile>
 </tileset>

@@ -10,9 +10,11 @@ local start_screen = require "start-screen-controller"
 local cooldown = require "cooldown"
 local entity = require "entity"
 
-local world = {}
+local world_lib = {}
 
-function world.new(data, scene_queue)
+world_lib.DRAW_PHYSICS = false
+
+function world_lib.new(data, scene_queue)
     local world = {
         player = player_lib.new(data.level_start),
         entities = {},
@@ -34,9 +36,7 @@ function world.new(data, scene_queue)
             self.scene_queue:send({ name = "gameover" })
             return
         end
-
-        self.player:update(dt)
-
+        
         local old_cam = self.cam:clone()
         local level_size = vec.v2(self.bounds.width, self.bounds.height)
         self.cam:retarget(vec.clamp(
@@ -45,15 +45,13 @@ function world.new(data, scene_queue)
             self.bounds + level_size - consts.VP/2
         ))
 
-        physics.check_collisions(self.ground, physics.bodies, dt)
-
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
         local to_despawn = table.map(
             table.filter(self.entities, function (e)
                 local p = e:get_draw_box()
-                return e.offscreen_start >= 400
-                    or p.y > self.bounds.y + self.bounds.height
+                return not e.keepalive and (e.offscreen_start >= 400
+                    or p.y > self.bounds.y + self.bounds.height)
             end),
             function (e) return e.id end
         )
@@ -61,6 +59,9 @@ function world.new(data, scene_queue)
             GAME_LOG("despawning entity with id =", id)
             if self.entities[id].on_despawn ~= nil then
                 self.entities[id]:on_despawn()
+            end
+            if self.entities[id].body ~= nil then
+                physics.unregister_body(self.entities[id].body)
             end
             self.entities[id] = nil
         end
@@ -90,6 +91,8 @@ function world.new(data, scene_queue)
                 e:player_collision(self.player:position())
             end
         end
+        self.player:update(dt)
+        physics.check_collisions(self.ground, physics.bodies, dt)
     end
 
     function world:draw_hud(dt)
@@ -184,6 +187,21 @@ function world.new(data, scene_queue)
                 end
             end
         end
+
+        if world_lib.DRAW_PHYSICS then
+            for _, b in pairs(physics.bodies) do
+                if b.__shape == "circle" then
+                    rl.DrawCircleLines(b.position.x, b.position.y, b.radius, rl.RED)
+                elseif b.__shape == "rectangle" then
+                    rl.DrawRectangleLines(b.position.x, b.position.y, b.width, b.height, rl.RED)
+                end
+
+                vec.draw(b.velocity, b.position)
+                if b.platform_velocity then
+                    vec.draw(b.platform_velocity, b.position, rl.BLUE)
+                end
+            end
+        end
         rl.EndMode2D()
 
         self:draw_hud(dt)
@@ -207,4 +225,4 @@ function world.new(data, scene_queue)
     return world
 end
 
-return world
+return world_lib

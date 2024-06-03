@@ -19,7 +19,7 @@ function entity:update(dt)
             self.target = self:next_target()
         end
 
-        self.body.velocity = vec.normalize(self.target - position) * self.speed * dt
+        self.body.velocity = vec.normalize(self.target - position) * self.speed
     end
 
     self.body:update(dt)
@@ -76,7 +76,8 @@ function entity:next_target()
         end)
     end
 
-    self.current_dir = dirs[1] or self.current_dir
+    local new_dir = dirs[1] or self.current_dir
+    self.current_dir = new_dir
     local target = vec.floor((tile + self.current_dir) * 32) + vec.v2(16, 16)
     return target
 end
@@ -102,16 +103,16 @@ function platform.new(world, position, width, height)
     body.air_resistance_enabled = false
     body.static_collisions_enabled = false
 
-    GAME_LOG(position)
     local obj = setmetatable({
         starting_pos = vec.v2(position.x, position.y - height),
         decor = world.decor,
-        speed = 5000,
+        speed = 128,
         body = body,
         height = height,
         width = width,
         current_dir = nil,
         target = nil,
+        keepalive = true,
     }, entity)
     obj.target = obj:next_target()
     return obj

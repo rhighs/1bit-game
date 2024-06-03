@@ -11,7 +11,7 @@ physics.bodies = {}
 function physics.clear() physics.bodies = {} end
 function physics.register_body(body)
     local _, b = table.max(physics.bodies, function (b) return b.id end)
-    body.id = b and b.id or 1
+    body.id = b == nil and 1 or (b.id + 1)
     table.insert(physics.bodies, body)
 end
 function physics.unregister_body(body)

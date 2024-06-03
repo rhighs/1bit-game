@@ -9,6 +9,7 @@ function textures.load()
     textures.candles    = rl.LoadTexture("assets/candles.png")
     textures.candle_ghost = rl.LoadTexture("assets/candle-ghost.png")
     textures.fireball   = rl.LoadTexture("assets/fireball.png")
+    textures.platform   = rl.LoadTexture("assets/moving-platform.png")
 end
 
 return textures

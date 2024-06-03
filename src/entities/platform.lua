@@ -6,6 +6,7 @@ local color = require "color"
 local util = require "util"
 local vec = require "vec"
 local physics = require "physics"
+local textures = require "textures"
 
 local entity = {}
 
@@ -27,7 +28,12 @@ end
 
 function entity:draw()
     local vec_point = self.body.position + self.body.velocity
-    rl.DrawRectangle(self.body.position.x, self.body.position.y, self.width, self.height, color.COLOR_POSITIVE)
+    rl.DrawTextureRec(
+        textures.platform,
+        util.Rec(0, 0, 64, 12),
+        self.body.position,
+        rl.WHITE
+    )
 
     if platform.DEBUG_DRAW then
         rl.DrawCircleV(self:position(), 3, rl.RED)
@@ -62,7 +68,10 @@ function entity:next_target()
             local next = tile + dir
             if self.decor[next.y] ~= nil then
                 local neighbor = self.decor[next.y][next.x]
-                return neighbor ~= nil and neighbor.gid
+                return
+                    neighbor ~= nil
+                    and neighbor.properties ~= nil
+                    and neighbor.properties.ppath_point
             end
             return false
         end

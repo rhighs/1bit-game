@@ -69,7 +69,7 @@ function player:handle_movement()
         return true
     end
 
-    if self.body.grounded or self.body.on_platform then
+    if self.body.grounded then
         self.body.velocity.x = 0
     end
 

@@ -8,37 +8,21 @@ physics.AIR_RESISTANCE_COEFF = 2
 
 physics.bodies = {}
 
+function physics.clear() physics.bodies = {} end
 function physics.register_body(body)
+    local _, b = table.max(physics.bodies, function (b) return b.id end)
+    body.id = b and b.id or 1
     table.insert(physics.bodies, body)
 end
-
 function physics.unregister_body(body)
-    for i, b in ipairs(table) do
-        if b == body then
-            table.remove(physics.bodies, i)
-        end
-    end
+    GAME_LOG("removing physics body with id =", body.id)
+    physics.bodies = table.filter(
+        physics.bodies,
+        function (b) return b.id ~= body.id end
+    )
 end
 
-function physics.clear() physics.bodies = {} end
-
 function physics.check_collisions(grid, bodies, dt)
-    for i, body in ipairs(bodies) do
-        if body.static_collisions_enabled then
-            local tiles = occupied_tiles(body.position, body.radius)
-            local static_bodies = {}
-            for _, tile in ipairs(tiles) do
-                local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
-                local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
-                if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
-                    table.insert(static_bodies, { pos = tile, info = grid[tile.y][tile.x] })
-                end
-
-                body:resolve_static_collisions(static_bodies)
-            end
-        end
-    end
-
     for i, first_body in ipairs(bodies) do
         if first_body.dynamic_collisions_enabled then
             local dynamic_body_collisions = {}
@@ -51,24 +35,38 @@ function physics.check_collisions(grid, bodies, dt)
                     end
                 end
             end
-
             first_body.colliders = dynamic_body_collisions
-            first_body:resolve_dynamic_collisions(dynamic_body_collisions)
+            first_body:resolve_dynamic_collisions(dynamic_body_collisions, dt)
+        end
+    end
+
+    for i, body in ipairs(bodies) do
+        if body.static_collisions_enabled then
+            local tiles = occupied_tiles(body.position, body.radius)
+            local static_bodies = {}
+            for _, tile in ipairs(tiles) do
+                local rec = util.Rec(tile.x * 32, tile.y * 32, 32, 32)
+                local collides = rl.CheckCollisionCircleRec(body.position, body.radius, rec)
+                if grid[tile.y] ~= nil and grid[tile.y][tile.x] ~= nil and collides then
+                    table.insert(static_bodies, { pos = tile, info = grid[tile.y][tile.x] })
+                end
+                body:resolve_static_collisions(static_bodies, dt)
+            end
         end
     end
 end
 
 local physics_body = {}
 
-function physics_body:resolve_static_collisions(static_bodies)
+function physics_body:resolve_static_collisions(static_bodies, dt)
     if self.static_collision_resolver ~= nil then
-        self.static_collision_resolver(self, static_bodies)
+        self.static_collision_resolver(self, static_bodies, dt)
     end
 end
 
-function physics_body:resolve_dynamic_collisions(dynamic_bodies)
+function physics_body:resolve_dynamic_collisions(dynamic_bodies, dt)
     if self.dynamic_collision_resolver ~= nil then
-        self.dynamic_collision_resolver(self, dynamic_bodies)
+        self.dynamic_collision_resolver(self, dynamic_bodies, dt)
     end
 end
 
@@ -86,19 +84,26 @@ function physics_body:update(dt)
         return velocity + (acceleration * dt)
     end
 
-    -- rob: avoid being rocketed downward when a platform you just dropeed off is descending
-    if not self.on_platform and self.platform_velocity.y >= 0 then
-        self.platform_velocity.y = 0
-    end
-
     if self.grounded and self.velocity.y >= 0 then
         self.velocity.y = 0
         self.platform_velocity.y = 0
     end
 
+    -- rob: force platform sticking
+    if self.on_platform then
+        self.velocity.y = vec.length(self.platform_velocity)*2
+    end
+
+    -- rob: do not preserve pvel y up if we're falling.
+    --      disable this if you want to get a launch effect
+    if not (self.on_platform or self.grounded)
+        and self.platform_velocity.y < 0 and self.velocity.y > 0 then
+        self.platform_velocity.y = 0
+    end
+
     local use_platform_vel = vec.length(self.platform_velocity) > 0.01
     local cv_dt = (use_platform_vel and 0.5 or 1.0) * dt
-    if use_platform_vel then
+    if use_platform_vel and not self.on_platform then
         self.platform_velocity = consume_velocity(self.platform_velocity, cv_dt)
     end
 
@@ -109,7 +114,6 @@ function physics_body:update(dt)
 
     self.old_pos = self.position
     self.position = self.position + (self.velocity * dt) + (self.platform_velocity * dt)
-
     self.force = vec.zero()
 end
 
@@ -128,13 +132,13 @@ function new_body(position, mass)
         colliders = {},
         mass = mass,
         friction = 1.0,
-        shape_type = nil,
         reset_forces = function (self) self.force = 0 end,
         apply_force = function(self, force) self.force = self.force + force end,
         on_platform = false,
         platform_velocity = vec.zero(),
         static_collisions_enabled = true,
         dynamic_collisions_enabled = true,
+        __shape = nil
     }, physics_body)
 end
 
@@ -218,7 +222,7 @@ function check_body_collision(first_body, second_body)
     end
 end
 
-function circle_static_collision_resolver(body, static_bodies)
+function circle_static_collision_resolver(body, static_bodies, dt)
     local ct = vec.floor(body.position / 32)
 
     local ground_tile = table.find(static_bodies, function(tile)
@@ -256,7 +260,7 @@ function circle_static_collision_resolver(body, static_bodies)
     end
 end
 
-function circle_dynamic_collision_resolver(body, dynamic_bodies)
+function circle_dynamic_collision_resolver(body, dynamic_bodies, dt)
     local rectangles = table.filter(dynamic_bodies, function(r) return r.__shape == "rectangle" end)
     local should_recompute = #rectangles > 0
 
@@ -269,6 +273,7 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies)
     local bottom_body = poll_body(function(r) return r.position.y > body.position.y end)
     body.on_platform = bottom_body ~= nil 
     if body.on_platform then
+        body.velocity = vec.zero()
         body.platform_velocity = bottom_body.velocity
         body.position.y = bottom_body.position.y - body.radius
     end
@@ -292,19 +297,19 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies)
     if left_body ~= nil then
         body.position.x = left_body.position.x + left_body.width + body.radius
         body.velocity.x = 0
+        if body.velocity.y < 0 then
+            body.velocity.y = 0
+        end
     end
 
     local right_body = poll_body(function(r) return r.position.x > body.position.x end)
     if right_body ~= nil then
         body.position.x = right_body.position.x - body.radius
         body.velocity.x = 0
+        if body.velocity.y < 0 then
+            body.velocity.y = 0
+        end
     end
-
-    -- ideally, calculate collisions again if the above changed body.position
-    -- if should_recompute then
-    --     any collision?
-    -- end
-    -- local circles = table.filter(dynamic_bodies, function(r) return r.__shape == "circle" end)
 end
 
 function rectangle_static_collision_resolver(body, static_bodies) end

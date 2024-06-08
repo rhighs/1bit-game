@@ -50,11 +50,9 @@ while not rl.WindowShouldClose() do
 	rl.BeginDrawing()
 	rl.ClearBackground(color.COLOR_SECONDARY)
     rl.DrawFPS(10, 10)
-
     scenes:get():draw(dt)
 
 	rl.EndDrawing()
 end
 
-rl.ClosePhysics()
 rl.CloseWindow()

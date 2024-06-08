@@ -1,3 +1,4 @@
+local ffi = require "ffi"
 local consts = require "consts"
 local util = require "util"
 local player_lib = require "player"
@@ -15,6 +16,39 @@ local world_lib = {}
 world_lib.DRAW_PHYSICS = false
 
 function world_lib.new(data, scene_queue)
+    local f_shader_source = [[
+#version 330
+
+// do not touch these
+in vec2 fragTexCoord;
+in vec4 fragColor;
+out vec4 finalColor;
+uniform sampler2D texture0;
+uniform vec4 colDiffuse;
+
+uniform vec3 onWhiteColor;
+uniform vec3 onBlackColor;
+
+vec4 mapColor(vec4 current) {
+    return 
+        vec4(current.x == 0 && current.y == 0 && current.z == 0
+            ? onBlackColor.xyz
+            : onWhiteColor.xyz,
+        current.w);
+}
+
+void main()
+{
+    vec4 texelColor = texture(texture0, fragTexCoord);
+    vec4 color = texelColor*colDiffuse*fragColor;
+    finalColor = mapColor(color);
+}
+]]
+
+    local shader = rl.LoadShaderFromMemory(nil, f_shader_source)
+    local on_white_color_loc = rl.GetShaderLocation(shader, "onWhiteColor")
+    local on_black_color_loc = rl.GetShaderLocation(shader, "onBlackColor")
+
     local world = {
         player = player_lib.new(data.level_start),
         entities = {},
@@ -30,6 +64,26 @@ function world_lib.new(data, scene_queue)
     function world:check_player_bounds(bounds)
         return rl.CheckCollisionCircleRec(self.player:position(), self.player.body.radius, bounds)
     end
+
+    local w_float3 = ffi.new("float[3]", { 1.0, 1.0, 1.0 })
+    local b_float3 = ffi.new("float[3]", { 0.0, 0.0, 0.0 })
+    function world:set_shader_color(w, b)
+        w_float3[0], w_float3[1], w_float3[2] = w.r, w.g, w.b
+        b_float3[0], b_float3[1], b_float3[2] = b.r, b.g, b.b
+        rl.SetShaderValue(
+            shader,
+            on_black_color_loc,
+            b_float3,
+            rl.SHADER_UNIFORM_VEC3
+        )
+        rl.SetShaderValue(
+            shader,
+            on_white_color_loc,
+            w_float3,
+            rl.SHADER_UNIFORM_VEC3
+        )
+    end
+    world:set_shader_color({ r=0, g=1, b=0 }, { r=0, g=0, b=0 })
 
     function world:update(dt)
         if not self:check_player_bounds(self.bounds) then
@@ -186,6 +240,7 @@ function world_lib.new(data, scene_queue)
     end
 
     function world:draw()
+        rl.BeginShaderMode(shader)
         rl.ClearBackground(rl.BLACK)
 
         rl.BeginMode2D(self.cam:get())
@@ -219,6 +274,7 @@ function world_lib.new(data, scene_queue)
         rl.EndMode2D()
 
         self:draw_hud(dt)
+        rl.EndShaderMode()
     end
 
     -- public api functions:
@@ -230,6 +286,10 @@ function world_lib.new(data, scene_queue)
         if entt.body ~= nil then
             physics.register_body(entt.body)
         end
+    end
+
+    function world:destroy()
+        rl.UnloadShader(self.shader)
     end
 
     function world:send_scene_event(name)

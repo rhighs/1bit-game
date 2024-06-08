@@ -5,6 +5,15 @@ local vec = require "vec"
 local physics = require "physics"
 local textures = require "textures"
 
+local ARM_HEIGHT = 69 -- and not 64
+local BALL_WIDTH = 55
+local BALL_HEIGHT = 50
+local HANDLE_HEIGHT = 13
+local PENDULUM_RADIUS = 128
+local ARM_OFFSET = 16
+local BALL_OFFSET = 25
+local CHAIN_HEIGHT = 16
+
 function ball.new(world, spawn_pos, _w, _h, data)
     local ball = {
         body = physics.new_circle(vec.zero(), 16, 1/10000),
@@ -12,7 +21,8 @@ function ball.new(world, spawn_pos, _w, _h, data)
         radius = data.radius,
         arm_queue = data.arm_queue,
         num_chains = math.ceil((data.radius - (64 - 16) - 25) / 16),
-        world = world
+        world = world,
+        direction = data.direction
     }
 
     ball.body.position = spawn_pos
@@ -36,9 +46,11 @@ function ball.new(world, spawn_pos, _w, _h, data)
         if tile.info == nil then
             return
         end
-        if tile.info.gid ~= 4 or tile.info.flip_vert == -1 then
+        if (tile.info.gid ~= 4 and tile.info.gid ~= 3)
+        or tile.info.flip_vert or tile.info.flip_diag then
             return
         end
+        util.pyprint("tile info =", tile.info)
         body.velocity.y = -300
         body.locked_ys[tile.pos.y] = true
     end
@@ -48,18 +60,28 @@ function ball.new(world, spawn_pos, _w, _h, data)
 
     function ball:update(dt)
         self.body:update(dt)
-        self.angle = self.angle - 0.04
+        self.angle = self.angle + (0.04 * self.direction)
         if self.angle > 2*math.pi then
             self.angle = 0
         end
     end
 
     function ball:draw()
+        local chain_height = self.radius - (ARM_HEIGHT - ARM_OFFSET) - BALL_OFFSET
+        local tmp = vec.v2(-math.sin(self.angle), -math.cos(self.angle))
+        rl.DrawTexturePro(
+            textures.arm,
+            util.Rec(128, 16, 32, 32),
+            util.RecV(self.body.position + tmp * ((self.num_chains+1)*16), vec.v2(32, 32)),
+            vec.v2(16, 13),
+            math.deg(-self.angle),
+            rl.WHITE
+        )
         for i = 1, self.num_chains+1 do
-            local pos = vec.v2(-math.sin(self.angle), -math.cos(self.angle)) * ((i-1)*16)
+            local pos = tmp * ((i-1)*16)
             rl.DrawTexturePro(
-                textures.chain,
-                util.Rec(0, 0, 16, 16),
+                textures.arm,
+                util.Rec(128, 0, 16, 16),
                 util.RecV(self.body.position + pos, vec.v2(16, 16)),
                 vec.v2(8, 16),
                 math.deg(-self.angle),
@@ -67,8 +89,8 @@ function ball.new(world, spawn_pos, _w, _h, data)
             )
         end
         rl.DrawTexturePro(
-            textures.chain_ball,
-            util.Rec(0, 0, 55, 50),
+            textures.arm,
+            util.Rec(64, 0, 55, 50),
             util.RecV(self.body.position, vec.v2(55, 50)),
             vec.v2(55/2, 50/2),
             math.deg(-self.angle),

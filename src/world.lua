@@ -36,7 +36,7 @@ function world_lib.new(data, scene_queue)
             self.scene_queue:send({ name = "gameover" })
             return
         end
-        
+
         local old_cam = self.cam:clone()
         local level_size = vec.v2(self.bounds.width, self.bounds.height)
         self.cam:retarget(vec.clamp(
@@ -56,7 +56,7 @@ function world_lib.new(data, scene_queue)
             function (e) return e.id end
         )
         for _, id in ipairs(to_despawn) do
-            GAME_LOG("despawning entity with id =", id)
+            -- GAME_LOG("despawning entity with id =", id)
             if self.entities[id].on_despawn ~= nil then
                 self.entities[id]:on_despawn()
             end
@@ -76,7 +76,7 @@ function world_lib.new(data, scene_queue)
             end
         )
         for _, e in ipairs(new_entities) do
-            GAME_LOG("spawning new entity with id =", e.id)
+            -- GAME_LOG("spawning new entity with id =", e.id)
             local entt = entity.create_new(self, e)
             self.entities[e.id] = entt
             if entt.body ~= nil then
@@ -91,6 +91,13 @@ function world_lib.new(data, scene_queue)
                 e:player_collision(self.player:position())
             end
         end
+
+        -- warp stuff
+        if self.warp_pos ~= nil then
+            self.player.body.position = self.warp_pos
+            self.warp_pos = nil
+        end
+
         self.player:update(dt)
         physics.check_collisions(self.ground, physics.bodies, dt)
     end
@@ -227,6 +234,12 @@ function world_lib.new(data, scene_queue)
 
     function world:send_scene_event(name)
         self.scene_queue:send({ name = name })
+    end
+
+    function world:warp_to(name)
+        print("searching for", name)
+        local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
+        self.warp_pos = vec.copy(warp.pos)
     end
 
     return world

@@ -64,7 +64,8 @@ function read_objects(layer)
             pos = vec.v2(v.x, v.y),
             enemy_id = v.name,
             width = v.width,
-            height = v.height
+            height = v.height,
+            data = v.properties
         })
     end
     return objs

@@ -19,7 +19,6 @@ function entity.create_new(world, data)
     if lib == nil then
         error(util.pystr("unknown entity: ", data))
     end
-    util.pyprint(lib)
     local entt = lib.new(world, data.pos, data.width, data.height, data)
     entt.offscreen_start = -1
     entt.id = data.id

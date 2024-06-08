@@ -32,7 +32,7 @@ end
 
 function entity:player_collision(pos)
     self.player_inside = true
-    if rl.IsKeyDown(rl.KEY_E) then
+    if rl.IsKeyReleased(rl.KEY_E) then
         return self.on_interaction()
     end
     return nil

@@ -34,7 +34,7 @@ function entity:get_hitbox()
 end
 
 function entity:player_collision(pos)
-    self.world:send_scene_event("gameover")
+    -- self.world:send_scene_event("gameover")
 end
 
 function ghost.new(world, spawn_pos, ...)

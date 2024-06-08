@@ -7,6 +7,13 @@ physics.GRAVITY = vec.v2(0, 2 * 9.8 * physics.METER_UNIT)
 physics.AIR_RESISTANCE_COEFF = 2
 
 physics.bodies = {}
+physics.collision_policies = {
+    TOP    = 0x00000001,
+    BOTTOM = 0x00000002,
+    LEFT   = 0x00000004,
+    RIGHT  = 0x00000008,
+    ALL    = 0x0000000F,
+}
 
 function physics.clear() physics.bodies = {} end
 function physics.register_body(body)
@@ -58,12 +65,12 @@ end
 
 local physics_body = {}
 
+function physics_body:has_collision_policy(p) return bit.band(self.c_policy, p) ~= 0 end
 function physics_body:resolve_static_collisions(static_bodies, dt)
     if self.static_collision_resolver ~= nil then
         self.static_collision_resolver(self, static_bodies, dt)
     end
 end
-
 function physics_body:resolve_dynamic_collisions(dynamic_bodies, dt)
     if self.dynamic_collision_resolver ~= nil then
         self.dynamic_collision_resolver(self, dynamic_bodies, dt)
@@ -138,6 +145,7 @@ function new_body(position, mass)
         platform_velocity = vec.zero(),
         static_collisions_enabled = true,
         dynamic_collisions_enabled = true,
+        c_policy = physics.collision_policies.ALL,
         __shape = nil
     }, physics_body)
 end
@@ -271,7 +279,9 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies, dt)
     end
 
     local bottom_body = poll_body(function(r) return r.position.y > body.position.y end)
-    body.on_platform = bottom_body ~= nil 
+    body.on_platform = bottom_body ~= nil and
+        bottom_body:has_collision_policy(physics.collision_policies.TOP) and
+        body.velocity.y >= 0
     if body.on_platform then
         body.velocity = vec.zero()
         body.platform_velocity = bottom_body.velocity
@@ -283,7 +293,9 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies, dt)
             and body.position.x >= r.position.x
             and body.position.x <= r.position.x + r.width
         end)
-    if top_body ~= nil then
+    if top_body ~= nil and
+        top_body:has_collision_policy(physics.collision_policies.BOTTOM) and
+        body.velocity.y <= 0 then
         body.position.y = top_body.position.y + top_body.height + body.radius
         if body.velocity.y < 0 then
             body.velocity.y = 0
@@ -294,7 +306,9 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies, dt)
         return r.position.x < body.position.x
             and r.position.x + r.width < body.position.x
         end)
-    if left_body ~= nil then
+    if left_body ~= nil
+        and left_body:has_collision_policy(physics.collision_policies.RIGHT) and
+        body.velocity.x <= 0 then
         body.position.x = left_body.position.x + left_body.width + body.radius
         body.velocity.x = 0
         if body.velocity.y < 0 then
@@ -303,7 +317,9 @@ function circle_dynamic_collision_resolver(body, dynamic_bodies, dt)
     end
 
     local right_body = poll_body(function(r) return r.position.x > body.position.x end)
-    if right_body ~= nil then
+    if right_body ~= nil
+        and right_body:has_collision_policy(physics.collision_policies.LEFT) and
+        body.velocity.x >= 0 then
         body.position.x = right_body.position.x - body.radius
         body.velocity.x = 0
         if body.velocity.y < 0 then

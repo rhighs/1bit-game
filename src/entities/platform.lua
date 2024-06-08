@@ -111,6 +111,7 @@ function platform.new(world, position, width, height)
     body.gravity_enabled = false
     body.air_resistance_enabled = false
     body.static_collisions_enabled = false
+    body.c_policy = physics.collision_policies.TOP
 
     local obj = setmetatable({
         starting_pos = vec.v2(position.x, position.y - height),

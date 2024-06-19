@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <object name="door-warp" width="32" height="32">
+  <properties>
+   <property name="to" value="B"/>
+   <property name="warp-name" value="A"/>
+  </properties>
+ </object>
+</template>

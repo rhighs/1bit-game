@@ -8,7 +8,9 @@ local entity = {}
 
 local INTERACTION_WAIT = 0.4
 
-function entity:update(dt) end
+function entity:update(dt)
+    self.player_inside = false
+end
 
 function entity:draw()
     if self.player_inside then

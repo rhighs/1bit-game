@@ -16,10 +16,9 @@ local world_lib = {}
 world_lib.DRAW_PHYSICS = false
 
 function world_lib.new(data, scene_queue)
-    local f_shader_source = [[
+    local shader_source = [[
 #version 330
 
-// do not touch these
 in vec2 fragTexCoord;
 in vec4 fragColor;
 out vec4 finalColor;
@@ -28,24 +27,27 @@ uniform vec4 colDiffuse;
 
 uniform vec3 onWhiteColor;
 uniform vec3 onBlackColor;
+uniform float lightness; // 0.0..1.0
 
-vec4 mapColor(vec4 current) {
-    return 
-        vec4(current.x == 0 && current.y == 0 && current.z == 0
-            ? onBlackColor.xyz
-            : onWhiteColor.xyz,
-        current.w);
+bool isBlack(vec4 c) {
+    return c.x == 0 && c.y == 0 && c.z == 0;
 }
 
-void main()
-{
+vec4 mapColor(vec4 color) {
+    return mix(
+        vec4(0, 0, 0, 0),
+        vec4(lightness, lightness, lightness, 1),
+        vec4(isBlack(color) ? onBlackColor.xyz : onWhiteColor.xyz, color.w)
+    );
+}
+
+void main() {
     vec4 texelColor = texture(texture0, fragTexCoord);
-    vec4 color = texelColor*colDiffuse*fragColor;
-    finalColor = mapColor(color);
+    finalColor = mapColor(texelColor * colDiffuse * fragColor);
 }
 ]]
 
-    local shader = rl.LoadShaderFromMemory(nil, f_shader_source)
+    local shader = rl.LoadShaderFromMemory(nil, shader_source)
     local on_white_color_loc = rl.GetShaderLocation(shader, "onWhiteColor")
     local on_black_color_loc = rl.GetShaderLocation(shader, "onBlackColor")
 
@@ -56,7 +58,13 @@ void main()
         bounds = data.level_bounds,
         ground = data.ground,
         decor = data.decor,
-        scene_queue = scene_queue
+        scene_queue = scene_queue,
+        mode = 'normal',
+        warp = {
+            pos = nil,
+            fade_light = 1.0,
+            step = -0.05
+        }
     }
 
     physics.register_body(world.player.body)
@@ -65,27 +73,27 @@ void main()
         return rl.CheckCollisionCircleRec(self.player:position(), self.player.body.radius, bounds)
     end
 
-    local w_float3 = ffi.new("float[3]", { 1.0, 1.0, 1.0 })
-    local b_float3 = ffi.new("float[3]", { 0.0, 0.0, 0.0 })
-    function world:set_shader_color(w, b)
-        w_float3[0], w_float3[1], w_float3[2] = w.r, w.g, w.b
-        b_float3[0], b_float3[1], b_float3[2] = b.r, b.g, b.b
-        rl.SetShaderValue(
-            shader,
-            on_black_color_loc,
-            b_float3,
-            rl.SHADER_UNIFORM_VEC3
-        )
-        rl.SetShaderValue(
-            shader,
-            on_white_color_loc,
-            w_float3,
-            rl.SHADER_UNIFORM_VEC3
-        )
+    function world:set_palette(black, white)
+        black = rl.ColorNormalize(black)
+        white = rl.ColorNormalize(white)
+        local b = ffi.new "float [3]"
+        local w = ffi.new "float [3]"
+        b[0], b[1], b[2] = black.x, black.y, black.z
+        w[0], w[1], w[2] = white.x, white.y, white.z
+        rl.SetShaderValue(shader, on_black_color_loc, b, rl.SHADER_UNIFORM_VEC3)
+        rl.SetShaderValue(shader, on_white_color_loc, w, rl.SHADER_UNIFORM_VEC3)
     end
-    world:set_shader_color({ r=0, g=1, b=0 }, { r=0, g=0, b=0 })
 
-    function world:update(dt)
+    function world:set_lightness(value)
+        local lightness = ffi.new "float [1]"
+        lightness[0] = value
+        rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "lightness"), lightness, rl.SHADER_UNIFORM_FLOAT)
+    end
+
+    world:set_palette(rl.BLACK, rl.WHITE)
+    world:set_lightness(1.0)
+
+    function world:normal_update(dt)
         if not self:check_player_bounds(self.bounds) then
             self.scene_queue:send({ name = "gameover" })
             return
@@ -146,14 +154,30 @@ void main()
             end
         end
 
-        -- warp stuff
-        if self.warp_pos ~= nil then
-            self.player.body.position = self.warp_pos
-            self.warp_pos = nil
-        end
-
         self.player:update(dt)
         physics.check_collisions(self.ground, physics.bodies, dt)
+    end
+
+    function world:warp_mode_update(dt)
+        self.warp.fade_light = self.warp.fade_light + self.warp.step
+        if self.warp.fade_light < 0 and self.warp.step < 0 then
+            self.warp.step = -self.warp.step
+            self:set_lightness(0)
+            self.player:set_position(self.warp.pos)
+            self:normal_update(dt)
+            self.warp.pos = nil
+        elseif self.warp.fade_light > 1.0 and self.warp.step > 0 then
+            self.warp.step = -self.warp.step
+            self.mode = 'normal'
+        else
+            self:set_lightness(self.warp.fade_light)
+        end
+    end
+
+    function world:update(dt)
+            if self.mode == 'warp'   then self:warp_mode_update(dt)
+        elseif self.mode == 'normal' then self:normal_update(dt)
+        else error('invalid mode: ' .. self.mode) end
     end
 
     function world:draw_hud(dt)
@@ -198,6 +222,7 @@ void main()
 
         local flip_diag, flip_vert, flip_horz =
             tile_info.flip_diag, tile_info.flip_vert, tile_info.flip_horz
+
         if flip_diag and flip_vert and flip_horz then
             source_rec.width = -source_rec.width
             rotation = 90.0
@@ -297,9 +322,13 @@ void main()
     end
 
     function world:warp_to(name)
-        print("searching for", name)
         local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
-        self.warp_pos = vec.copy(warp.pos)
+        if warp == nil then
+            print("WARNING: no warp found: " .. name)
+            return
+        end
+        self.warp.pos = vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height) - vec.v2(16, 32)
+        self.mode = 'warp'
     end
 
     return world

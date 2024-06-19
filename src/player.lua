@@ -249,6 +249,11 @@ function player:dir()
 end
 
 function player:position() return self.body.position end
+
+function player:set_position(pos)
+    self.body.position = pos + vec.v2(self.body.radius, self.body.radius)
+end
+
 function player:current_texture() return self.textures[self.texture_cycle:current()] end
 function player:jump() self.body.velocity.y = -math.sqrt(self.body.gravity.y * 2 * PLAYER_JUMP_HEIGHT) end
 
@@ -271,7 +276,11 @@ function player_lib.new(player_position)
 
     local init_textures = player_lib.TEXTURES.IDLE
     local body_radius = init_textures[1].height/2
-    local body = physics.new_circle(player_position, body_radius, PLAYER_BODY_DENSITY)
+    local body = physics.new_circle(
+        player_position + vec.v2(body_radius, body_radius),
+        body_radius,
+        PLAYER_BODY_DENSITY
+    )
     body.id = "player"
     return setmetatable({
         speed = physics.METER_UNIT * 10,

@@ -10,46 +10,14 @@ local physics = require "physics"
 local start_screen = require "start-screen-controller"
 local cooldown = require "cooldown"
 local entity = require "entity"
+local shader = require "shader"
 
 local world_lib = {}
 
 world_lib.DRAW_PHYSICS = false
 
 function world_lib.new(data, scene_queue)
-    local shader_source = [[
-#version 330
-
-in vec2 fragTexCoord;
-in vec4 fragColor;
-out vec4 finalColor;
-uniform sampler2D texture0;
-uniform vec4 colDiffuse;
-
-uniform vec3 onWhiteColor;
-uniform vec3 onBlackColor;
-uniform float lightness; // 0.0..1.0
-
-bool isBlack(vec4 c) {
-    return c.x == 0 && c.y == 0 && c.z == 0;
-}
-
-vec4 mapColor(vec4 color) {
-    return mix(
-        vec4(0, 0, 0, 0),
-        vec4(lightness, lightness, lightness, 1),
-        vec4(isBlack(color) ? onBlackColor.xyz : onWhiteColor.xyz, color.w)
-    );
-}
-
-void main() {
-    vec4 texelColor = texture(texture0, fragTexCoord);
-    finalColor = mapColor(texelColor * colDiffuse * fragColor);
-}
-]]
-
-    local shader = rl.LoadShaderFromMemory(nil, shader_source)
-    local on_white_color_loc = rl.GetShaderLocation(shader, "onWhiteColor")
-    local on_black_color_loc = rl.GetShaderLocation(shader, "onBlackColor")
+    local shader = shader.create_fragment_shader()
 
     local world = {
         player = player_lib.new(data.level_start),
@@ -80,14 +48,14 @@ void main() {
         local w = ffi.new "float [3]"
         b[0], b[1], b[2] = black.x, black.y, black.z
         w[0], w[1], w[2] = white.x, white.y, white.z
-        rl.SetShaderValue(shader, on_black_color_loc, b, rl.SHADER_UNIFORM_VEC3)
-        rl.SetShaderValue(shader, on_white_color_loc, w, rl.SHADER_UNIFORM_VEC3)
+        shader.on_black_color = { b, rl.SHADER_UNIFORM_VEC3 }
+        shader.on_white_color = { w, rl.SHADER_UNIFORM_VEC3 }
     end
 
     function world:set_lightness(value)
         local lightness = ffi.new "float [1]"
         lightness[0] = value
-        rl.SetShaderValue(shader, rl.GetShaderLocation(shader, "lightness"), lightness, rl.SHADER_UNIFORM_FLOAT)
+        shader.lightness = { lightness, rl.SHADER_UNIFORM_FLOAT }
     end
 
     world:set_palette(rl.BLACK, rl.WHITE)
@@ -265,7 +233,7 @@ void main() {
     end
 
     function world:draw()
-        rl.BeginShaderMode(shader)
+        rl.BeginShaderMode(shader:get())
         rl.ClearBackground(rl.BLACK)
 
         rl.BeginMode2D(self.cam:get())
@@ -314,7 +282,7 @@ void main() {
     end
 
     function world:destroy()
-        rl.UnloadShader(self.shader)
+        shader:unload()
     end
 
     function world:send_scene_event(name)

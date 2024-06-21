@@ -40,7 +40,7 @@ while not rl.WindowShouldClose() do
         scenes:get():destroy()
         if ev.name == "/quit" then
             GAME_LOG("/quit received...")
-            os.exit(0)
+            break
         end
 
         scenes.cur = ev.name

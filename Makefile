@@ -1,14 +1,14 @@
-PROG:=ghosts
-LEVEL_DATA:=leveldata/level3.lua
+prog := ghosts
+level_data := leveldata/level3.lua leveldata/level1.lua
 
-all: $(LEVEL_DATA)
-	LUA_PATH="?;?.lua;src/?.lua" raylua_e src/main.lua && mv main_out $(PROG) && echo "ghosts executable available at ./$(PROG)"
+all: $(level_data)
+	LUA_PATH="?;?.lua;src/?.lua" raylua_e src/main.lua && mv main_out $(prog) && echo "ghosts executable available at ./$(prog)"
 
 leveldata/level%.lua: leveldata/level%.tmx
 	tiled --export-map --embed-tilesets --resolve-types-and-properties $< $@
 
 .PHONY: run
-run: $(LEVEL_DATA)
+run: $(level_data)
 	LUA_PATH="?;?.lua;src/?.lua" raylua_s src/main.lua
 
 .PHONY: install

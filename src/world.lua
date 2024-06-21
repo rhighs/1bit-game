@@ -16,22 +16,31 @@ local world_lib = {}
 
 world_lib.DRAW_PHYSICS = false
 
-function world_lib.new(data, scene_queue)
+function world_lib.new(data, scene_queue, from_warp)
     local shader = shader.create_fragment_shader()
 
+    function find_warp(name)
+        local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
+        if warp == nil then
+            print("WARNING: no warp found: " .. name)
+            return nil
+        end
+        return vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height) - vec.v2(16, 32)
+    end
+
     local world = {
-        player = player_lib.new(data.level_start),
+        player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start),
         entities = {},
         cam = camera.new(consts.VP, vec.v2(0, 0)),
         bounds = data.level_bounds,
         ground = data.ground,
         decor = data.decor,
         scene_queue = scene_queue,
-        mode = 'normal',
+        mode = 'enter',
         warp = {
             pos = nil,
-            fade_light = 1.0,
-            step = -0.05
+            fade_light = 0.0,
+            step = 0.05
         }
     }
 
@@ -86,7 +95,7 @@ function world_lib.new(data, scene_queue)
             function (e) return e.id end
         )
         for _, id in ipairs(to_despawn) do
-            -- GAME_LOG("despawning entity with id =", id)
+            GAME_LOG("despawning entity with id =", id)
             if self.entities[id].on_despawn ~= nil then
                 self.entities[id]:on_despawn()
             end
@@ -106,7 +115,7 @@ function world_lib.new(data, scene_queue)
             end
         )
         for _, e in ipairs(new_entities) do
-            -- GAME_LOG("spawning new entity with id =", e.id)
+            GAME_LOG("spawning new entity with id =", e.id)
             local entt = entity.create_new(self, e)
             self.entities[e.id] = entt
             if entt.body ~= nil then
@@ -131,9 +140,23 @@ function world_lib.new(data, scene_queue)
         if self.warp.fade_light < 0 and self.warp.step < 0 then
             self.warp.step = -self.warp.step
             self:set_lightness(0)
-            self.player:set_position(self.warp.pos)
-            self:normal_update(dt)
-            self.warp.pos = nil
+            if self.warp.data.level_name ~= nil and self.warp.data.level_name ~= "" then
+                self.scene_queue:send({
+                    name = "level",
+                    data = {
+                        level = "leveldata/" .. self.warp.data.level_name,
+                        from_warp = self.warp.data.name
+                    }
+                })
+            else
+                local warp = find_warp(self.warp.data.name)
+                if warp == nil then
+                    return
+                end
+                self.player:set_position(warp)
+                self:normal_update(dt)
+                self.warp.data = nil
+            end
         elseif self.warp.fade_light > 1.0 and self.warp.step > 0 then
             self.warp.step = -self.warp.step
             self.mode = 'normal'
@@ -142,9 +165,22 @@ function world_lib.new(data, scene_queue)
         end
     end
 
+    function world:enter_mode_update(dt)
+        if self.warp.fade_light == 0.0 then
+            self:normal_update(dt)
+        end
+        self.warp.fade_light = self.warp.fade_light + self.warp.step
+        if self.warp.fade_light > 1.0 and self.warp.step > 0 then
+            self.warp.step = -self.warp.step
+            self.mode = 'normal'
+        end
+        self:set_lightness(self.warp.fade_light)
+    end
+
     function world:update(dt)
             if self.mode == 'warp'   then self:warp_mode_update(dt)
         elseif self.mode == 'normal' then self:normal_update(dt)
+        elseif self.mode == 'enter'  then self:enter_mode_update(dt)
         else error('invalid mode: ' .. self.mode) end
     end
 
@@ -289,13 +325,9 @@ function world_lib.new(data, scene_queue)
         self.scene_queue:send({ name = name })
     end
 
-    function world:warp_to(name)
-        local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
-        if warp == nil then
-            print("WARNING: no warp found: " .. name)
-            return
-        end
-        self.warp.pos = vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height) - vec.v2(16, 32)
+    function world:warp_to(name, level_name)
+        self.warp.data = { name = name, level_name = level_name }
+        util.pyprint("warp data = ", self.warp.data)
         self.mode = 'warp'
     end
 

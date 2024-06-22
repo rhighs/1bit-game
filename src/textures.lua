@@ -1,6 +1,7 @@
 local textures = {}
 
 function textures.load()
+    textures.player     = rl.LoadTexture("assets/player.png")
     textures.ghost      = rl.LoadTexture("assets/ghost.png")
     textures.arm        = rl.LoadTexture("assets/ghost-arm.png")
     textures.spider     = rl.LoadTexture("assets/spider.png")

@@ -15,7 +15,6 @@ rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
 rl.SetTargetFPS(60)
 textures.load()
-player.load_textures()
 
 local scene_events = event_queue.new()
 local scenes = {

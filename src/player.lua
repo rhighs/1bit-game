@@ -5,6 +5,7 @@ local cycle = require "cycle"
 local consts = require "consts"
 local cooldown = require "cooldown"
 local color = require "color"
+local textures = require "textures"
 
 local player_lib = {}
 
@@ -17,13 +18,13 @@ local PLAYER_BODY_DENSITY = 1
 local PLAYER_BODY_RADIUS = 10
 local PLAYER_JUMP_HEIGHT = physics.METER_UNIT * 3.5
 
-local PLAYER_STATE_IDLE = 0
-local PLAYER_STATE_RUNNING = 1
-local PLAYER_STATE_JUMPING = 2
-
 local TORCH_DISCHARGE_RATE = 1
 local TORCH_CHARGE_RATE = 0
 local TORCH_MAX_LENGTH = 200
+
+local PLAYER_STATE_IDLE = 0
+local PLAYER_STATE_RUNNING = 1
+local PLAYER_STATE_JUMPING = 2
 
 local state_tostring = {
     [PLAYER_STATE_IDLE] = "PLAYER_STATE_IDLE",
@@ -34,23 +35,6 @@ local state_tostring = {
 local IDLE_CYCLE_INTERVAL = 0.5
 local RUNNING_CYCLE_INTERVAL = 0.1
 local JUMPING_CYCLE_INTERVAL = 1000
-
-function player_lib.load_textures()
-    player_lib.TEXTURES = {
-        IDLE = {
-            [1] = rl.LoadTexture("assets/idle1.png"),
-            [2] = rl.LoadTexture("assets/idle2.png"),
-        },
-        RUNNING = {
-            [1] = rl.LoadTexture("assets/running1.png"),
-            [2] = rl.LoadTexture("assets/running2.png"),
-            [3] = rl.LoadTexture("assets/running3.png"),
-        },
-        JUMPING = {
-            [1] = rl.LoadTexture("assets/running1.png"),
-        }
-    }
-end
 
 function player:handle_movement()
     local x_dir, y_dir = self:dir()
@@ -134,37 +118,53 @@ function player:update(dt)
     self:update_state()
     self:collisions_update(dt)
     self:update_torch(dt)
-    self.texture_cycle:update(dt)
     self.body:update(dt)
+
+    if self.texture_cycle ~= nil then
+        self.texture_cycle:update(dt)
+    end
 
     if rl.IsKeyDown(rl.KEY_T) then
         self:toggle_torch()
     end
 
     local new_state = self.state
-
     if old_state ~= new_state then
         if new_state == PLAYER_STATE_IDLE then
-            self.textures = player_lib.TEXTURES.IDLE
-            self.texture_cycle = cycle.new(1, #self.textures, IDLE_CYCLE_INTERVAL)
+            self.texture_cycle = cycle.new_values(
+                { 0, 1 },
+                IDLE_CYCLE_INTERVAL
+            )
         elseif new_state == PLAYER_STATE_RUNNING then
-            self.textures = player_lib.TEXTURES.RUNNING
-            self.texture_cycle = cycle.new(1, #self.textures, RUNNING_CYCLE_INTERVAL)
+            self.texture_cycle = cycle.new_values(
+                { 2, 3, 4, 3 },
+                RUNNING_CYCLE_INTERVAL
+            )
         elseif new_state == PLAYER_STATE_JUMPING then
-            self.textures = player_lib.TEXTURES.JUMPING
-            self.texture_cycle = cycle.new(1, #self.textures, JUMPING_CYCLE_INTERVAL)
+            self.texture_cycle = nil
         end
     end
 end
 
+function player:sprite_id()
+    if self.state == PLAYER_STATE_JUMPING then
+        return 2
+    end
+    local sprite_id = self.texture_cycle:current()
+    GAME_LOG("sprite id", sprite_id)
+    return sprite_id
+end
+
 function player:draw(dt)
-    local texture = self:current_texture()
+    local sprite_id = self:sprite_id()
+    local texture = textures.player
+
     local position = self:position()
-    position = vec.v2(position.x - texture.width/2, position.y - texture.height/2)
+    position = vec.v2(position.x-16, position.y-16)
 
     local x_dir = self:dir()
-    local src_rec = util.Rec(0, 0, texture.width * self.facing_dir.x, texture.height)
-    local dst_rec = util.Rec(position.x, position.y, texture.width, texture.height)
+    local src_rec = util.Rec(sprite_id * 32, 0, 32 * self.facing_dir.x, 32)
+    local dst_rec = util.Rec(position.x, position.y, 32, 32)
 
     if self.torch then
         self:draw_torch(dt)
@@ -254,7 +254,6 @@ function player:set_position(pos)
     self.body.position = pos + vec.v2(self.body.radius, self.body.radius)
 end
 
-function player:current_texture() return self.textures[self.texture_cycle:current()] end
 function player:jump() self.body.velocity.y = -math.sqrt(self.body.gravity.y * 2 * PLAYER_JUMP_HEIGHT) end
 
 function player:update_torch(dt)
@@ -274,8 +273,7 @@ end
 function player_lib.new(player_position)
     player.__index = player
 
-    local init_textures = player_lib.TEXTURES.IDLE
-    local body_radius = init_textures[1].height/2
+    local body_radius = 16
     local body = physics.new_circle(
         player_position + vec.v2(body_radius, body_radius),
         body_radius,
@@ -287,8 +285,7 @@ function player_lib.new(player_position)
         body = body,
         facing_dir = vec.v2(1, 0),
         state = PLAYER_STATE_IDLE,
-        textures = init_textures,
-        texture_cycle = cycle.new(1, #init_textures, IDLE_CYCLE_INTERVAL),
+        texture_cycle = cycle.new_values({ 0, 1 }, IDLE_CYCLE_INTERVAL),
 
         torch = false,
         toggle_torch = cooldown.make_cooled(function (self) self.torch = not self.torch end, 0.2),

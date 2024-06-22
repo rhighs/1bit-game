@@ -6,13 +6,17 @@ local physics = require "physics"
 local textures = require "textures"
 
 local ARM_HEIGHT = 69 -- and not 64
-local BALL_WIDTH = 55
-local BALL_HEIGHT = 50
+local BALL_WIDTH = 48
+local BALL_HEIGHT = 48
 local HANDLE_HEIGHT = 13
 local PENDULUM_RADIUS = 128
 local ARM_OFFSET = 16
 local BALL_OFFSET = 25
 local CHAIN_HEIGHT = 16
+
+local CHAIN_FRAME     = vec.v2(64, 48)
+local BALL_FRAME      = vec.v2(64, 0)
+local HOOK_FRAME      = vec.v2(80, 48)
 
 function ball.new(world, spawn_pos, _w, _h, data)
     local ball = {
@@ -71,8 +75,8 @@ function ball.new(world, spawn_pos, _w, _h, data)
         local tmp = vec.v2(-math.sin(self.angle), -math.cos(self.angle))
         rl.DrawTexturePro(
             textures.arm,
-            util.Rec(128, 16, 32, 32),
-            util.RecV(self.body.position + tmp * ((self.num_chains+1)*16), vec.v2(32, 32)),
+            util.RecV(HOOK_FRAME, vec.v2(32, 16)),
+            util.RecV(self.body.position + tmp * ((self.num_chains+1)*16), vec.v2(32, 16)),
             vec.v2(16, 13),
             math.deg(-self.angle),
             rl.WHITE
@@ -81,7 +85,7 @@ function ball.new(world, spawn_pos, _w, _h, data)
             local pos = tmp * ((i-1)*16)
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(128, 0, 16, 16),
+                util.RecV(CHAIN_FRAME, vec.v2(16, 16)),
                 util.RecV(self.body.position + pos, vec.v2(16, 16)),
                 vec.v2(8, 16),
                 math.deg(-self.angle),
@@ -90,9 +94,9 @@ function ball.new(world, spawn_pos, _w, _h, data)
         end
         rl.DrawTexturePro(
             textures.arm,
-            util.Rec(64, 0, 55, 50),
-            util.RecV(self.body.position, vec.v2(55, 50)),
-            vec.v2(55/2, 50/2),
+            util.RecV(BALL_FRAME, vec.v2(48, 48)),
+            util.RecV(self.body.position, vec.v2(48, 48)),
+            vec.v2(48/2, 48/2),
             math.deg(-self.angle),
             rl.WHITE
         )
@@ -102,10 +106,10 @@ function ball.new(world, spawn_pos, _w, _h, data)
         local end_pos = self.body.position
                       - vec.v2(math.sin(self.angle), math.cos(self.angle))
                       * self.radius
-        local xmin = math.min(end_pos.x, self.body.position.x - 55)
-        local xmax = math.max(end_pos.x, self.body.position.x + 55)
-        local ymin = math.min(end_pos.y, self.body.position.y - 50)
-        local ymax = math.max(end_pos.y, self.body.position.y + 50)
+        local xmin = math.min(end_pos.x, self.body.position.x - 48)
+        local xmax = math.max(end_pos.x, self.body.position.x + 48)
+        local ymin = math.min(end_pos.y, self.body.position.y - 48)
+        local ymax = math.max(end_pos.y, self.body.position.y + 48)
         return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
     end
 

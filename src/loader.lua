@@ -12,15 +12,25 @@ function find_tileset(data, name)
     return table.find(data.tilesets, function (l) return l.name == name end)
 end
 
-function load_textures(data, tilesets)
-    local textures = {}
-    for _, name in ipairs(tilesets) do
+function load_tiles(data, names)
+    local tiles = {}
+    for _, name in ipairs(names) do
         local ts = find_tileset(data, name)
-        for _, v in ipairs(ts.tiles) do
-            textures[ts.firstgid + v.id] = rl.LoadTexture(v.image:sub(4))
+        local img = rl.LoadTexture(ts.image:sub(4))
+        local h = ts.imageheight / ts.tileheight
+        local w = ts.imagewidth  / ts.tilewidth
+        for y = 0, h-1 do
+            for x = 0, w-1 do
+                local id = y * w + x
+                tiles[ts.firstgid + id] = {
+                    texture = img,
+                    pos = vec.v2(x * ts.tilewidth, y * ts.tileheight),
+                    size = vec.v2(ts.tilewidth, ts.tileheight)
+                }
+            end
         end
     end
-    return textures
+    return tiles
 end
 
 function read_tiles(layer, tileset)
@@ -76,7 +86,7 @@ function compute_bounds(ground)
         local result = {}
         for x, v in pairs(row) do
             if v ~= nil and v ~= 0 then
-                table.insert(result, vec.v2(x * 32, y * 32))
+                table.insert(result, vec.v2(x, y) * 32)
             end
         end
         return result
@@ -90,7 +100,7 @@ function compute_bounds(ground)
 end
 
 function loader.load_level(data)
-    local textures = load_textures(data, { "ground", "decors" })
+    local tiles = load_tiles(data, { "ground", "decor", "decor96x96" })
     local ground = read_tiles(find_layer(data, "ground"))
     local decor = read_tiles(find_layer(data, "decor"), find_tileset(data, "decors"))
     local entities = read_objects(find_layer(data, "entities"))
@@ -107,7 +117,7 @@ function loader.load_level(data)
         level_start = level_start,
         entities = entities,
         decor = decor,
-        textures = textures
+        tiles = tiles
     }
 end
 

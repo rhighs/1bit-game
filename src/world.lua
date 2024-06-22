@@ -19,6 +19,7 @@ world_lib.DRAW_PHYSICS = false
 function world_lib.new(data, scene_queue, from_warp)
     local shader = shader.create_fragment_shader()
 
+    util.pyprint("entities =", data.entities)
     function find_warp(name)
         local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
         if warp == nil then
@@ -209,19 +210,19 @@ function world_lib.new(data, scene_queue, from_warp)
             return
         end
 
-        local texture = data.textures[tile_info.gid]
-        if texture == nil then
-            error(util.pystr("trying to draw tex id =", tile_info.gid, "at pos = (", x, y, ")"))
+        local tile = data.tiles[tile_info.gid]
+        if tile == nil then
+            error(util.pystr("trying to draw tile id =", tile_info.gid, "at pos = (", x, y, ")"))
         end
 
         local rotation = 0.0
-        local origin = vec.v2(texture.width, texture.height)/2
-        local source_rec = util.Rec(0, 0, texture.width, texture.height)
-        local y_offset = texture.height/32 - 1
+        local origin = tile.size / 2
+        local source_rec = util.RecV(tile.pos, tile.size)
+        local y_offset = tile.size.y/32 - 1
         local dest_rec = util.Rec(
-            x           *32 + origin.x,
+                       x*32 + origin.x,
             (y-y_offset)*32 + origin.y,
-            texture.width, texture.height
+            tile.size.x, tile.size.y
         )
 
         local flip_diag, flip_vert, flip_horz =
@@ -246,7 +247,7 @@ function world_lib.new(data, scene_queue, from_warp)
         end
 
         rl.DrawTexturePro(
-            texture,
+            tile.texture,
             source_rec,
             dest_rec,
             origin,
@@ -327,7 +328,6 @@ function world_lib.new(data, scene_queue, from_warp)
 
     function world:warp_to(name, level_name)
         self.warp.data = { name = name, level_name = level_name }
-        util.pyprint("warp data = ", self.warp.data)
         self.mode = 'warp'
     end
 

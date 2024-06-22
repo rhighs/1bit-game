@@ -15,6 +15,12 @@ local ARM_OFFSET = 16
 local BALL_RADIUS = 48/2
 local CHAIN_HEIGHT = 16
 
+local ARM_FRAME_HOLD  = vec.v2(0, 0)
+local ARM_FRAME_THROW = vec.v2(32, 0)
+local CHAIN_FRAME     = vec.v2(64, 48)
+local BALL_FRAME      = vec.v2(64, 0)
+local HOOK_FRAME      = vec.v2(80, 48)
+
 function arm.new(world, spawn_pos, ...)
     local dir = world.player:position().x < spawn_pos.x and -1 or 1
     local arm = {
@@ -97,7 +103,7 @@ function arm.new(world, spawn_pos, ...)
         if self.state == "throw" then
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(32, 0, 32 * self.direction, ARM_HEIGHT),
+                util.RecV(ARM_FRAME_THROW, vec.v2(32 * self.direction, ARM_HEIGHT)),
                 util.RecV(self.pivot_pos, vec.v2(32, ARM_HEIGHT)),
                 vec.v2(ARM_OFFSET, ARM_OFFSET),
                 math.deg(-self.angle),
@@ -106,7 +112,7 @@ function arm.new(world, spawn_pos, ...)
         elseif self.state == "pendulum" then
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(0, 0, 32 * self.direction, ARM_HEIGHT),
+                util.RecV(ARM_FRAME_HOLD, vec.v2(32 * self.direction, ARM_HEIGHT)),
                 util.RecV(self.pivot_pos, vec.v2(32, ARM_HEIGHT)),
                 vec.v2(ARM_OFFSET, ARM_OFFSET),
                 math.deg(-self.angle),
@@ -117,7 +123,7 @@ function arm.new(world, spawn_pos, ...)
                           * ((ARM_HEIGHT - ARM_OFFSET) + (i-1)*16)
                 rl.DrawTexturePro(
                     textures.arm,
-                    util.Rec(128, 0, 16, 16),
+                    util.RecV(CHAIN_FRAME, vec.v2(16, 16)),
                     util.RecV(self.pivot_pos + pos, vec.v2(16, 16)),
                     vec.v2(8, 0),
                     math.deg(-self.angle),
@@ -126,8 +132,8 @@ function arm.new(world, spawn_pos, ...)
             end
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(64, 0, 55, 50),
-                util.RecV(self.bob_pos, vec.v2(55, 50)),
+                util.RecV(BALL_FRAME, vec.v2(48, 48)),
+                util.RecV(self.bob_pos, vec.v2(48, 48)),
                 vec.v2(55/2, 50/2),
                 math.deg(-self.angle),
                 rl.WHITE
@@ -135,7 +141,7 @@ function arm.new(world, spawn_pos, ...)
         else -- state: appear
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(32, 0, 32 * self.direction, ARM_HEIGHT), -- arm
+                util.RecV(ARM_FRAME_THROW, vec.v2(32 * self.direction, ARM_HEIGHT)),
                 util.RecV(self.pivot_pos, vec.v2(32, ARM_HEIGHT)),
                 vec.v2(16, 16),
                 0,
@@ -143,12 +149,9 @@ function arm.new(world, spawn_pos, ...)
             )
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(128, 16, 32, 16),
+                util.RecV(HOOK_FRAME, vec.v2(32, 16)),
                 util.RecV(
-                    vec.v2(
-                        self.bob_pos.x-16,
-                        self.pivot_pos.y + ARM_HEIGHT - ARM_OFFSET - 13
-                    ),
+                    vec.v2(self.bob_pos.x-16, self.pivot_pos.y + ARM_HEIGHT - ARM_OFFSET - 13),
                     vec.v2(32, 16)
                 ),
                 vec.v2(0, 0),
@@ -159,7 +162,7 @@ function arm.new(world, spawn_pos, ...)
                 local y = ((ARM_HEIGHT - ARM_OFFSET) + (i-1)*16)
                 rl.DrawTexturePro(
                     textures.arm,
-                    util.Rec(128, 0, 16, 16),
+                    util.RecV(CHAIN_FRAME, vec.v2(16, 16)),
                     util.RecV(vec.v2(self.bob_pos.x, self.pivot_pos.y + y), vec.v2(16, 16)),
                     vec.v2(8, 0),
                     0,
@@ -168,7 +171,7 @@ function arm.new(world, spawn_pos, ...)
             end
             rl.DrawTexturePro(
                 textures.arm,
-                util.Rec(64, 0, 55, 50),
+                util.RecV(BALL_FRAME, vec.v2(48, 48)),
                 util.RecV(self.bob_pos, vec.v2(55, 50)),
                 vec.v2(55/2, 50/2),
                 0,

@@ -27,4 +27,15 @@ function cycle_lib.new(from, to, interval)
     }, cycle)
 end
 
+function cycle_lib.new_values(values, interval)
+    local from = 1
+    local to = #values
+    local cycle = cycle_lib.new(from, to, interval)
+    local _current = cycle.current
+    cycle.current = function (self)
+        return values[_current(self)]
+    end
+    return cycle
+end
+
 return cycle_lib

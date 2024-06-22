@@ -150,9 +150,7 @@ function player:sprite_id()
     if self.state == PLAYER_STATE_JUMPING then
         return 2
     end
-    local sprite_id = self.texture_cycle:current()
-    GAME_LOG("sprite id", sprite_id)
-    return sprite_id
+    return self.texture_cycle:current()
 end
 
 function player:draw(dt)

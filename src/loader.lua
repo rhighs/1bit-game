@@ -16,17 +16,19 @@ function load_tiles(data, names)
     local tiles = {}
     for _, name in ipairs(names) do
         local ts = find_tileset(data, name)
-        local img = rl.LoadTexture(ts.image:sub(4))
-        local h = ts.imageheight / ts.tileheight
-        local w = ts.imagewidth  / ts.tilewidth
-        for y = 0, h-1 do
-            for x = 0, w-1 do
-                local id = y * w + x
-                tiles[ts.firstgid + id] = {
-                    texture = img,
-                    pos = vec.v2(x * ts.tilewidth, y * ts.tileheight),
-                    size = vec.v2(ts.tilewidth, ts.tileheight)
-                }
+        if ts ~= nil then
+            local img = rl.LoadTexture(ts.image:sub(4))
+            local h = ts.imageheight / ts.tileheight
+            local w = ts.imagewidth  / ts.tilewidth
+            for y = 0, h-1 do
+                for x = 0, w-1 do
+                    local id = y * w + x
+                    tiles[ts.firstgid + id] = {
+                        texture = img,
+                        pos = vec.v2(x * ts.tilewidth, y * ts.tileheight),
+                        size = vec.v2(ts.tilewidth, ts.tileheight)
+                    }
+                end
             end
         end
     end

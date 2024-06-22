@@ -273,7 +273,7 @@ function player_lib.new(player_position)
 
     local body_radius = 16
     local body = physics.new_circle(
-        player_position + vec.v2(body_radius, body_radius),
+        player_position - vec.v2(0, body_radius),
         body_radius,
         PLAYER_BODY_DENSITY
     )

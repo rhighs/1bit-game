@@ -19,14 +19,13 @@ world_lib.DRAW_PHYSICS = false
 function world_lib.new(data, scene_queue, from_warp)
     local shader = shader.create_fragment_shader()
 
-    util.pyprint("entities =", data.entities)
     function find_warp(name)
         local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
         if warp == nil then
-            print("WARNING: no warp found: " .. name)
+            GAME_LOG("WARNING: no warp found: " .. name)
             return nil
         end
-        return vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height) - vec.v2(16, 32)
+        return vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height)
     end
 
     local world = {
@@ -307,6 +306,10 @@ function world_lib.new(data, scene_queue, from_warp)
         rl.EndShaderMode()
     end
 
+    function world:destroy()
+        shader:unload()
+    end
+
     -- public api functions:
     function world:spawn(data)
         local new_id = #self.entities + 1
@@ -316,10 +319,6 @@ function world_lib.new(data, scene_queue, from_warp)
         if entt.body ~= nil then
             physics.register_body(entt.body)
         end
-    end
-
-    function world:destroy()
-        shader:unload()
     end
 
     function world:send_scene_event(name)
@@ -335,3 +334,4 @@ function world_lib.new(data, scene_queue, from_warp)
 end
 
 return world_lib
+

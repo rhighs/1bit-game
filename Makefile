@@ -1,5 +1,5 @@
 prog := ghosts
-level_data := leveldata/level1.lua
+level_data := leveldata/level1.lua leveldata/level2.lua
 
 all: $(level_data)
 	LUA_PATH="?;?.lua;src/?.lua" raylua_e src/main.lua && mv main_out $(prog) && echo "ghosts executable available at ./$(prog)"

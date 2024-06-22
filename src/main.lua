@@ -32,8 +32,6 @@ local scenes = {
 while not rl.WindowShouldClose() do
     local dt = rl.GetFrameTime()
 
-    scenes:get():update(dt)
-
     local ev = scene_events:recv()
     if ev ~= nil then
         scenes:get():destroy()
@@ -45,6 +43,8 @@ while not rl.WindowShouldClose() do
         scenes.cur = ev.name
         scenes:get():init(ev.data)
     end
+
+    scenes:get():update(dt)
 
 	rl.BeginDrawing()
 	rl.ClearBackground(color.COLOR_SECONDARY)

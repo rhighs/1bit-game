@@ -11,6 +11,10 @@ leveldata/level%.lua: leveldata/level%.tmx
 run: $(level_data)
 	LUA_PATH="?;?.lua;src/?.lua" raylua_s src/main.lua
 
+.PHONY: test
+test:
+	LUA_PATH="?;?.lua;src/?.lua;tests/?.lua" raylua_s tests/main.lua
+
 .PHONY: install
 install:
 	./scripts/install-raylua.sh

@@ -1,0 +1,98 @@
+require "test"
+require "table-ext"
+
+return test_block("table functions tests", function (test)
+    local t = {1, 2, 3, 4, 5}
+
+    test("table.contains returns true if condition is met", function (test)
+        local result = table.contains(t, function(v) return v == 3 end)
+        test:assert(result == true)
+    end)
+
+    test("table.contains returns false if condition is not met", function (test)
+        local result = table.contains(t, function(v) return v == 6 end)
+        test:assert(result == false)
+    end)
+
+    test("table.find returns value and key if condition is met", function (test)
+        local value, key = table.find(t, function(v) return v == 4 end)
+        test:assert(value == 4)
+        test:assert(key == 4)
+    end)
+
+    test("table.find returns nil and 0 if condition is not met", function (test)
+        local value, key = table.find(t, function(v) return v == 6 end)
+        test:assert(value == nil)
+        test:assert(key == 0)
+    end)
+
+    test("table.filter returns table with elements that meet condition", function (test)
+        local result = table.filter(t, function(v) return v > 3 end)
+        test:assert(#result == 2)
+        test:assert(result[1] == 4)
+        test:assert(result[2] == 5)
+    end)
+
+    test("table.partition returns two tables based on condition", function (test)
+        local part1, part2 = table.partition(t, function(v) return v > 3 end)
+        test:assert(#part1 == 3)
+        test:assert(#part2 == 2)
+        test:assert(part1[1] == 1)
+        test:assert(part1[2] == 2)
+        test:assert(part1[3] == 3)
+        test:assert(part2[1] == 4)
+        test:assert(part2[2] == 5)
+    end)
+
+    test("table.flatten flattens nested tables", function (test)
+        local nested = {1, {2, 3}, {4, 5}}
+        local result = table.flatten(nested)
+        test:assert(#result == 5)
+        test:assert(result[1] == 1)
+        test:assert(result[2] == 2)
+        test:assert(result[3] == 3)
+        test:assert(result[4] == 4)
+        test:assert(result[5] == 5)
+    end)
+
+    test("table.map applies function to all elements", function (test)
+        local result = table.map(t, function(v) return v * 2 end)
+        test:assert(#result == 5)
+        test:assert(result[1] == 2)
+        test:assert(result[2] == 4)
+        test:assert(result[3] == 6)
+        test:assert(result[4] == 8)
+        test:assert(result[5] == 10)
+    end)
+
+    test("table.copy creates a copy of the table", function (test)
+        local copy = table.copy(t)
+        test:assert(#copy == 5)
+        test:assert(copy[1] == 1)
+        test:assert(copy[2] == 2)
+        test:assert(copy[3] == 3)
+        test:assert(copy[4] == 4)
+        test:assert(copy[5] == 5)
+    end)
+
+    test("table.sorted returns sorted table", function (test)
+        local unsorted = {3, 1, 4, 5, 2}
+        local sorted = table.sorted(unsorted)
+        test:assert(sorted[1] == 1)
+        test:assert(sorted[2] == 2)
+        test:assert(sorted[3] == 3)
+        test:assert(sorted[4] == 4)
+        test:assert(sorted[5] == 5)
+    end)
+
+    test("table.max returns the maximum value and its key", function (test)
+        local key, value = table.max(t)
+        test:assert(key == 5)
+        test:assert(value == 5)
+    end)
+
+    test("table.foldl applies function from left to right", function (test)
+        local sum = table.foldl(t, 0, function(v, acc) return acc + v end)
+        test:assert(sum == 15)
+    end)
+end)

@@ -13,7 +13,7 @@ run: $(level_data)
 
 .PHONY: test
 test:
-	LUA_PATH="?;?.lua;src/?.lua;tests/?.lua" raylua_s tests/main.lua
+	LUA_PATH="?;?.lua;src/?.lua;tests/?.lua" raylua_s tests/run_tests.lua
 
 .PHONY: install
 install:

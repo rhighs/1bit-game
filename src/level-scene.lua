@@ -15,6 +15,7 @@ function level_scene.new(scene_queue)
                 scene_queue,
                 data.from_warp
             )
+            self.world:set_palette(rl.BLACK, rl.WHITE)
         end,
 
         destroy = function (self) physics.clear() end,

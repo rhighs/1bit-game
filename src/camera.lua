@@ -6,7 +6,7 @@ local util = require "util"
 
 function camera.new(screen_size, start_pos)
     return {
-        camera = ffi.new("Camera2D", screen_size / 2, vec.zero(), 0, 1),
+        camera = ffi.new("Camera2D", screen_size / 2, start_pos, 0, 1),
         screen_size = screen_size,
         debug_counter = 0,
 

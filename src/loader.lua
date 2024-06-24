@@ -26,7 +26,8 @@ function load_tiles(data, names)
                     tiles[ts.firstgid + id] = {
                         texture = img,
                         pos = vec.v2(x * ts.tilewidth, y * ts.tileheight),
-                        size = vec.v2(ts.tilewidth, ts.tileheight)
+                        size = vec.v2(ts.tilewidth, ts.tileheight),
+                        properties = ts.tiles[id] == nil and {} or ts.tiles[id].properties
                     }
                 end
             end

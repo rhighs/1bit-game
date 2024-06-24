@@ -31,10 +31,12 @@ function world_lib.new(data, scene_queue, from_warp)
     local world = {
         player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start),
         entities = {},
-        cam = camera.new(consts.VP, vec.v2(0, 0)),
+        entity_data = data.entities,
+        cam = camera.new(consts.VP, vec.v2(-math.huge, -math.huge)),
         bounds = data.level_bounds,
         ground = data.ground,
         decor = data.decor,
+        tile_data = data.tiles,
         scene_queue = scene_queue,
         mode = 'enter',
         warp = {
@@ -67,22 +69,11 @@ function world_lib.new(data, scene_queue, from_warp)
         shader.lightness = { lightness, rl.SHADER_UNIFORM_FLOAT }
     end
 
-    world:set_palette(rl.BLACK, rl.WHITE)
-    world:set_lightness(1.0)
-
-    function world:normal_update(dt)
+    function world:normal_update(dt, old_cam)
         if not self:check_player_bounds(self.bounds) then
             self.scene_queue:send({ name = "gameover" })
             return
         end
-
-        local old_cam = self.cam:clone()
-        local level_size = vec.v2(self.bounds.width, self.bounds.height)
-        self.cam:retarget(vec.clamp(
-            self.player:position(),
-            self.bounds + consts.VP/2,
-            self.bounds + level_size - consts.VP/2
-        ))
 
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
@@ -107,7 +98,7 @@ function world_lib.new(data, scene_queue, from_warp)
 
         -- spawn new entities when they come inside the camera
         local new_entities = table.filter(
-            data.entities,
+            self.entity_data,
             function (e)
                 return self.entities[e.id] == nil
                    and self.cam:is_inside(util.RecV(e.pos, vec.v2(e.width, e.height)))
@@ -135,7 +126,7 @@ function world_lib.new(data, scene_queue, from_warp)
         physics.check_collisions(self.ground, physics.bodies, dt)
     end
 
-    function world:warp_mode_update(dt)
+    function world:warp_mode_update(dt, old_cam)
         self.warp.fade_light = self.warp.fade_light + self.warp.step
         if self.warp.fade_light < 0 and self.warp.step < 0 then
             self.warp.step = -self.warp.step
@@ -154,7 +145,7 @@ function world_lib.new(data, scene_queue, from_warp)
                     return
                 end
                 self.player:set_position(warp)
-                self:normal_update(dt)
+                self:normal_update(dt, old_cam)
                 self.warp.data = nil
             end
         elseif self.warp.fade_light > 1.0 and self.warp.step > 0 then
@@ -165,9 +156,9 @@ function world_lib.new(data, scene_queue, from_warp)
         end
     end
 
-    function world:enter_mode_update(dt)
+    function world:enter_mode_update(dt, old_cam)
         if self.warp.fade_light == 0.0 then
-            self:normal_update(dt)
+            self:normal_update(dt, old_cam)
         end
         self.warp.fade_light = self.warp.fade_light + self.warp.step
         if self.warp.fade_light > 1.0 and self.warp.step > 0 then
@@ -178,9 +169,17 @@ function world_lib.new(data, scene_queue, from_warp)
     end
 
     function world:update(dt)
-            if self.mode == 'warp'   then self:warp_mode_update(dt)
-        elseif self.mode == 'normal' then self:normal_update(dt)
-        elseif self.mode == 'enter'  then self:enter_mode_update(dt)
+        local old_cam = self.cam:clone()
+        local level_size = vec.v2(self.bounds.width, self.bounds.height)
+        self.cam:retarget(vec.clamp(
+            self.player:position(),
+            self.bounds + consts.VP/2,
+            self.bounds + level_size - consts.VP/2
+        ))
+
+            if self.mode == 'warp'   then self:warp_mode_update(dt, old_cam)
+        elseif self.mode == 'normal' then self:normal_update(dt, old_cam)
+        elseif self.mode == 'enter'  then self:enter_mode_update(dt, old_cam)
         else error('invalid mode: ' .. self.mode) end
     end
 
@@ -209,7 +208,7 @@ function world_lib.new(data, scene_queue, from_warp)
             return
         end
 
-        local tile = data.tiles[tile_info.gid]
+        local tile = self.tile_data[tile_info.gid]
         if tile == nil then
             error(util.pystr("trying to draw tile id =", tile_info.gid, "at pos = (", x, y, ")"))
         end

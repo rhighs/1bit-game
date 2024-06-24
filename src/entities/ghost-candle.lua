@@ -75,7 +75,6 @@ function ghost_candle.new(world, spawn_pos)
                 math.rad(angle_bound[2])
             )
             local v = vec.v2(math.cos(angle), math.sin(angle))
-            print("angle =", math.deg(angle), "v =", v)
             self.world:spawn({
                 enemy_id = "fireball",
                 pos = positions[i],

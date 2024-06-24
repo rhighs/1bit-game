@@ -4,6 +4,10 @@ local util = require "util"
 local vec = require "vec"
 local textures = require "textures"
 
+local SPIDER_RANGE      = 1.5*32
+local SPIDER_SIZE       = 2*32
+local SPIDER_RANGE_VERT = 2*32
+
 function spider.new(world, spawn_pos, width, height, data)
     local spider = {
         world = world,
@@ -36,14 +40,18 @@ function spider.new(world, spawn_pos, width, height, data)
     end
 
     function spider:update(dt)
+        function between(x, a, b)
+            return x > a and x < b
+        end
+
         self.timer = self.timer + 1
         if self.state == "idle" then
             local pp = self.world.player:position()
             if self.timer % 16 == 0 then
                 self.anim_frame = (self.anim_frame + 1) % 2
             end
-            if  pp.y > self.pos.y + 80 and pp.y < spider.lower_bound
-            and pp.x > self.pos.x - 32 and pp.x < self.pos.x + 64 + 32 then
+            if  between(pp.y, self.pos.y + SPIDER_RANGE_VERT, spider.lower_bound)
+            and between(pp.x, self.pos.x - SPIDER_RANGE, self.pos.x + SPIDER_SIZE + SPIDER_RANGE) then
                 self.state = "move"
                 self.target_pos = math.min(pp.y - 32, self.lower_bound - 80)
                 self.anim_frame = 0

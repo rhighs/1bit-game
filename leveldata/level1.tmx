@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="25" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="20">
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="25" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="31">
  <tileset firstgid="1" source="ground.tsx"/>
  <tileset firstgid="10" source="entities.tsx"/>
  <tileset firstgid="25" source="decor96x96.tsx"/>
@@ -53,9 +53,26 @@
     <property name="warp_name" value="A"/>
    </properties>
   </object>
-  <object id="16" template="ghost-candle.tx" x="576" y="288"/>
-  <object id="17" template="ghost.tx" x="512" y="320"/>
-  <object id="18" template="arm.tx" x="512" y="224"/>
-  <object id="19" template="spider.tx" x="416" y="224"/>
+  <object id="16" template="ghost-candle.tx" x="576" y="320"/>
+  <object id="17" template="ghost.tx" x="736" y="384"/>
+  <object id="19" template="spider.tx" x="704" y="32"/>
+  <object id="24" template="arm.tx" x="576" y="192">
+   <properties>
+    <property name="ball_type" value="small"/>
+    <property name="radius" type="int" value="128"/>
+   </properties>
+  </object>
+  <object id="27" template="arm.tx" x="704" y="192">
+   <properties>
+    <property name="ball_type" value="big"/>
+    <property name="radius" type="int" value="180"/>
+   </properties>
+  </object>
+  <object id="30" template="arm.tx" x="640" y="192">
+   <properties>
+    <property name="ball_type" value="medium"/>
+    <property name="radius" type="int" value="150"/>
+   </properties>
+  </object>
  </objectgroup>
 </map>

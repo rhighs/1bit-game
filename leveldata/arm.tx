@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <template>
  <tileset firstgid="1" source="entities.tsx"/>
- <object name="arm" gid="12" width="32" height="69"/>
+ <object name="arm" gid="12" width="32" height="69">
+  <properties>
+   <property name="ball_type" value="small"/>
+   <property name="radius" type="int" value="128"/>
+  </properties>
+ </object>
 </template>

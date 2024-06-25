@@ -6,57 +6,51 @@ local physics = require "physics"
 local textures = require "textures"
 
 local ARM_HEIGHT = 69 -- and not 64
-local BALL_WIDTH = 48
-local BALL_HEIGHT = 48
-local HANDLE_HEIGHT = 13
-local PENDULUM_RADIUS = 128
 local ARM_OFFSET = 16
 local BALL_OFFSET = 25
 local CHAIN_HEIGHT = 16
 
 local CHAIN_FRAME     = vec.v2(64, 48)
-local BALL_FRAME      = vec.v2(64, 0)
 local HOOK_FRAME      = vec.v2(80, 48)
 
 function ball.new(world, spawn_pos, _w, _h, data)
+    local r = data.ball_size.x / 2
     local ball = {
-        body = physics.new_circle(vec.zero(), 16, 1/10000),
+        body = physics.new_circle(vec.zero(), r, 1/10000),
         angle = data.angle,
         radius = data.radius,
         arm_queue = data.arm_queue,
-        num_chains = math.ceil((data.radius - (64 - 16) - 25) / 16),
         world = world,
-        direction = data.direction
+        direction = data.direction,
+        frame = data.ball_frame,
+        size  = data.ball_size,
+        ball_radius = data.ball_size.x / 2
     }
 
     ball.body.position = spawn_pos
     ball.body.velocity = vec.zero()
     ball.body.air_resistance_enabled = false
-    ball.body.static_collision_resolver = function (body, tiles)
+    function ball.body:static_collision_resolver(tiles)
         -- going down?
-        if body.old_pos.y >= body.position.y then
+        if self.old_pos.y >= self.position.y then
             return
         end
-        body.locked_ys = body.locked_ys or {}
+        self.locked_ys = self.locked_ys or {}
         local tile = table.foldl(
             table.filter(tiles, function (v)
-                return body.locked_ys[v.pos.y] == nil
+                return self.locked_ys[v.pos.y] == nil
             end),
             { pos = vec.v2(0, math.huge), info = nil },
-            function (t, u)
-                return t.pos.y < u.pos.y and t or u
-            end
+            function (t, u) return t.pos.y < u.pos.y and t or u end
         )
         if tile.info == nil then
             return
         end
-        if (tile.info.gid ~= 4 and tile.info.gid ~= 3)
-        or tile.info.flip_vert or tile.info.flip_diag then
-            return
+        if world.tile_data[tile.info.gid].properties.ground_type == 'top'
+        and not tile.info.flip_vert and not tile.info.flip_diag then
+            self.velocity.y = -300
+            self.locked_ys[tile.pos.y] = true
         end
-        util.pyprint("tile info =", tile.info)
-        body.velocity.y = -300
-        body.locked_ys[tile.pos.y] = true
     end
     ball.body.dynamic_collision_resolver = nil
 
@@ -64,57 +58,59 @@ function ball.new(world, spawn_pos, _w, _h, data)
 
     function ball:update(dt)
         self.body:update(dt)
-        self.angle = self.angle + (0.04 * self.direction)
+        self.angle = self.angle + (0.03 * self.direction)
         if self.angle > 2*math.pi then
             self.angle = 0
         end
     end
 
     function ball:draw()
-        local chain_height = self.radius - (ARM_HEIGHT - ARM_OFFSET) - BALL_OFFSET
-        local tmp = vec.v2(-math.sin(self.angle), -math.cos(self.angle))
+        local num_chains = math.ceil((self.radius - (ARM_HEIGHT - ARM_OFFSET) - self.ball_radius) / CHAIN_HEIGHT)
+        local pivot_pos = self.body.position + vec.v2(-math.sin(self.angle), -math.cos(self.angle)) * self.radius
+        local circ_pos = vec.v2(math.sin(self.angle), math.cos(self.angle))
+        local hook_pos = circ_pos * (ARM_HEIGHT - ARM_OFFSET - 13)
         rl.DrawTexturePro(
             textures.arm,
             util.RecV(HOOK_FRAME, vec.v2(32, 16)),
-            util.RecV(self.body.position + tmp * ((self.num_chains+1)*16), vec.v2(32, 16)),
-            vec.v2(16, 13),
+            util.RecV(pivot_pos + hook_pos, vec.v2(32, 16)),
+            vec.v2(16, 0),
             math.deg(-self.angle),
             rl.WHITE
         )
-        for i = 1, self.num_chains+1 do
-            local pos = tmp * ((i-1)*16)
+        for i = 0, num_chains-1 do
+            local pos = circ_pos * (ARM_HEIGHT - ARM_OFFSET + i*16)
             rl.DrawTexturePro(
                 textures.arm,
                 util.RecV(CHAIN_FRAME, vec.v2(16, 16)),
-                util.RecV(self.body.position + pos, vec.v2(16, 16)),
-                vec.v2(8, 16),
+                util.RecV(pivot_pos + pos, vec.v2(16, 16)),
+                vec.v2(8, 0),
                 math.deg(-self.angle),
                 rl.WHITE
             )
         end
         rl.DrawTexturePro(
             textures.arm,
-            util.RecV(BALL_FRAME, vec.v2(48, 48)),
-            util.RecV(self.body.position, vec.v2(48, 48)),
-            vec.v2(48/2, 48/2),
+            util.RecV(self.frame, self.size),
+            util.RecV(self.body.position, self.size),
+            self.size * 0.5,
             math.deg(-self.angle),
             rl.WHITE
         )
     end
 
     function ball:get_draw_box()
-        local end_pos = self.body.position
-                      - vec.v2(math.sin(self.angle), math.cos(self.angle))
-                      * self.radius
-        local xmin = math.min(end_pos.x, self.body.position.x - 48)
-        local xmax = math.max(end_pos.x, self.body.position.x + 48)
-        local ymin = math.min(end_pos.y, self.body.position.y - 48)
-        local ymax = math.max(end_pos.y, self.body.position.y + 48)
+        local end_pos = self.body.position - vec.v2(math.sin(self.angle), math.cos(self.angle)) * self.radius
+        local xmin = math.min(end_pos.x, self.body.position.x - self.size.x)
+        local xmax = math.max(end_pos.x, self.body.position.x + self.size.x)
+        local ymin = math.min(end_pos.y, self.body.position.y - self.size.y)
+        local ymax = math.max(end_pos.y, self.body.position.y + self.size.y)
         return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
     end
 
     function ball:get_hitbox()
-        return util.Rec(self.body.position.x - 25/2, self.body.position.y - 20/2, 25, 20)
+        local offset = self.size.x * 16 / 100 -- sub 16% of size
+        local v = vec.v2(offset, offset)
+        return util.RecV(self.body.position - self.size*0.5 + v, self.size - v*2)
     end
 
     function ball:player_collision(pos)

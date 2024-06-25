@@ -7,33 +7,44 @@ local event_queue = require "event_queue"
 local arm = {}
 
 local ARM_HEIGHT = 69 -- and not 64
-local BALL_WIDTH = 48
-local BALL_HEIGHT = 48
-local HANDLE_HEIGHT = 13
-local PENDULUM_RADIUS = 128
 local ARM_OFFSET = 16
-local BALL_RADIUS = 48/2
 local CHAIN_HEIGHT = 16
 
 local ARM_FRAME_HOLD  = vec.v2(0, 0)
 local ARM_FRAME_THROW = vec.v2(32, 0)
 local CHAIN_FRAME     = vec.v2(64, 48)
-local BALL_FRAME      = vec.v2(64, 0)
 local HOOK_FRAME      = vec.v2(80, 48)
 
-function arm.new(world, spawn_pos, ...)
+function ball_type_data(t)
+    return t == 'small' and {
+        frame = vec.v2( 64, 0), size = vec.v2(48, 48), init_force = vec.v2(2000, 6000)
+    }
+    or t == 'medium' and {
+        frame = vec.v2(112, 0), size = vec.v2(64, 64), init_force = vec.v2(4000, 9000)
+    }
+    or t == 'big' and {
+        frame = vec.v2(176, 0), size = vec.v2(96, 96), init_force = vec.v2(8000, 20000)
+    }
+    or error('invalid ball type: ' .. t)
+end
+
+function arm.new(world, spawn_pos, _w, _h, data)
+    local ball_data = ball_type_data(data.data.ball_type)
     local dir = world.player:position().x < spawn_pos.x and -1 or 1
     local arm = {
         pivot_pos = vec.copy(spawn_pos),
         bob_pos = spawn_pos + vec.v2(0, 4 * 32),
         w = 3.5 * dir * -1,
         angle = 0,
-        radius = PENDULUM_RADIUS,
+        radius = data.data.radius,
         state = "pendulum",
         event_queue = event_queue.new(),
         world = world,
-        direction = dir
+        direction = dir,
+        ball_frame = ball_data.frame,
+        ball_size = ball_data.size,
     }
+    arm.ball_radius = arm.ball_size.x / 2
 
     function arm:update(dt)
         return self['state_' .. self.state](self, dt)
@@ -41,26 +52,37 @@ function arm.new(world, spawn_pos, ...)
 
     function arm:state_pendulum(dt)
         local force = physics.GRAVITY.y * math.sin(self.angle)
-        local accel = -force / self.radius
+        local accel = -force / 128
         self.w = self.w + accel * dt
         self.angle = self.angle + self.w * dt
-        self.bob_pos = self.pivot_pos + vec.v2(math.sin(self.angle), math.cos(self.angle)) * self.radius
+        self.bob_pos = self.pivot_pos + vec.v2(
+            math.sin(self.angle),
+            math.cos(self.angle)
+        ) * self.radius
 
         if self.direction == -1 and self.angle < -math.pi/3
         or self.direction ==  1 and self.angle >  math.pi/3 then
             self.state = "throw"
             self.time = 0
 
-            local norm = vec.normalize(vec.rotate(self.pivot_pos - self.bob_pos, math.pi/2 * self.direction))
+            local norm = vec.normalize(vec.rotate(
+                self.pivot_pos - self.bob_pos, math.pi/2 * self.direction
+            ))
             world:spawn({
                 enemy_id = "chain-ball",
                 pos = self.bob_pos,
                 width = 0, height = 0, -- both useless
-                init_force = vec.v2(norm.x * 1000, norm.y * 2000),
+                init_force = vec.v2(
+                    norm.x * ball_data.init_force.x,
+                    norm.y * ball_data.init_force.y
+                ),
                 angle = self.angle,
                 radius = self.radius,
                 arm_queue = self.event_queue,
-                direction = self.direction
+                direction = self.direction,
+                ball_type = data.data.ball_type,
+                ball_frame = self.ball_frame,
+                ball_size  = self.ball_size
             })
         end
     end
@@ -84,11 +106,9 @@ function arm.new(world, spawn_pos, ...)
     function arm:state_appear(dt)
         self.time = self.time + 1
         self.pos = self.pos - 1
-        if self.time % 4 < 2 then
-            self.bob_pos = self.pivot_pos + vec.v2(self.pos, self.radius)
-        else
-            self.bob_pos = self.pivot_pos + vec.v2(-self.pos, self.radius)
-        end
+        self.bob_pos = self.pivot_pos + vec.v2(
+            self.pos * (self.time % 4 < 2 and 1 or -1), self.radius
+        )
         if self.pos == 0 then
             self.state = "pendulum"
             self.direction = world.player:position().x < self.pivot_pos.x and -1 or 1
@@ -99,7 +119,7 @@ function arm.new(world, spawn_pos, ...)
     end
 
     function arm:draw()
-        local num_chains = math.ceil((self.radius - (ARM_HEIGHT - ARM_OFFSET) - BALL_RADIUS) / CHAIN_HEIGHT)
+        local num_chains = math.ceil((self.radius - (ARM_HEIGHT - ARM_OFFSET) - self.ball_radius) / CHAIN_HEIGHT)
         if self.state == "throw" then
             rl.DrawTexturePro(
                 textures.arm,
@@ -118,9 +138,9 @@ function arm.new(world, spawn_pos, ...)
                 math.deg(-self.angle),
                 rl.WHITE
             )
-            for i = 1, num_chains do
+            for i = 0, num_chains-1 do
                 local pos = vec.v2(math.sin(self.angle), math.cos(self.angle))
-                          * ((ARM_HEIGHT - ARM_OFFSET) + (i-1)*16)
+                          * (ARM_HEIGHT - ARM_OFFSET + i*16)
                 rl.DrawTexturePro(
                     textures.arm,
                     util.RecV(CHAIN_FRAME, vec.v2(16, 16)),
@@ -132,18 +152,18 @@ function arm.new(world, spawn_pos, ...)
             end
             rl.DrawTexturePro(
                 textures.arm,
-                util.RecV(BALL_FRAME, vec.v2(48, 48)),
-                util.RecV(self.bob_pos, vec.v2(48, 48)),
-                vec.v2(55/2, 50/2),
+                util.RecV(self.ball_frame, self.ball_size),
+                util.RecV(self.bob_pos, self.ball_size),
+                self.ball_size * 0.5,
                 math.deg(-self.angle),
                 rl.WHITE
             )
-        else -- state: appear
+        elseif self.state == 'appear' then
             rl.DrawTexturePro(
                 textures.arm,
                 util.RecV(ARM_FRAME_THROW, vec.v2(32 * self.direction, ARM_HEIGHT)),
                 util.RecV(self.pivot_pos, vec.v2(32, ARM_HEIGHT)),
-                vec.v2(16, 16),
+                vec.v2(ARM_OFFSET, ARM_OFFSET),
                 0,
                 rl.WHITE
             )
@@ -158,8 +178,8 @@ function arm.new(world, spawn_pos, ...)
                 0,
                 rl.WHITE
             )
-            for i = 1, num_chains do
-                local y = ((ARM_HEIGHT - ARM_OFFSET) + (i-1)*16)
+            for i = 0, num_chains-1 do
+                local y = ARM_HEIGHT - ARM_OFFSET + i*CHAIN_HEIGHT
                 rl.DrawTexturePro(
                     textures.arm,
                     util.RecV(CHAIN_FRAME, vec.v2(16, 16)),
@@ -171,9 +191,9 @@ function arm.new(world, spawn_pos, ...)
             end
             rl.DrawTexturePro(
                 textures.arm,
-                util.RecV(BALL_FRAME, vec.v2(48, 48)),
-                util.RecV(self.bob_pos, vec.v2(55, 50)),
-                vec.v2(55/2, 50/2),
+                util.RecV(self.ball_frame, self.ball_size),
+                util.RecV(self.bob_pos, self.ball_size),
+                self.ball_size * 0.5,
                 0,
                 rl.WHITE
             )
@@ -186,10 +206,10 @@ function arm.new(world, spawn_pos, ...)
             local right_pos = math.max(self.bob_pos.x, self.pivot_pos.x)
             local up_pos    = math.min(self.bob_pos.y, self.pivot_pos.y)
             local down_pos  = math.max(self.bob_pos.y, self.pivot_pos.y)
-            local xmin = left_pos  - (left_pos  == self.bob_pos.x and 55 or 16)
-            local xmax = right_pos + (right_pos == self.bob_pos.x and 55 or 16)
-            local ymin = up_pos    - (up_pos    == self.bob_pos.y and 50 or 16)
-            local ymax = down_pos  + (down_pos  == self.bob_pos.y and 50 or 16)
+            local xmin = left_pos  - (left_pos  == self.bob_pos.x and self.ball_size.x or 16)
+            local xmax = right_pos + (right_pos == self.bob_pos.x and self.ball_size.x or 16)
+            local ymin = up_pos    - (up_pos    == self.bob_pos.y and self.ball_size.y or 16)
+            local ymax = down_pos  + (down_pos  == self.bob_pos.y and self.ball_size.y or 16)
             return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
         elseif self.state == "throw" then
             local end_pos = self.pivot_pos + vec.v2(math.sin(self.angle), math.cos(self.angle)) * 64
@@ -199,18 +219,18 @@ function arm.new(world, spawn_pos, ...)
             local ymax = math.max(end_pos.y, self.pivot_pos.y + 16)
             return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
         else
-            local xmin = math.min(self.bob_pos.x - BALL_RADIUS, self.pivot_pos.x - 16)
-            local xmax = math.min(self.bob_pos.x - BALL_RADIUS, self.pivot_pos.x + 16)
+            local xmin = math.min(self.bob_pos.x - self.ball_radius, self.pivot_pos.x - 16)
+            local xmax = math.min(self.bob_pos.x - self.ball_radius, self.pivot_pos.x + 16)
             local ymin = self.pivot_pos.y - 16
-            local ymax = self.bob_pos.y + BALL_RADIUS
+            local ymax = self.bob_pos.y + self.ball_radius
             return util.Rec(xmin, ymin, xmax - xmin, ymax - ymin)
         end
     end
 
     function arm:get_hitbox()
         if self.state == "pendulum" then
-            return util.RecV(self.bob_pos - vec.v2(BALL_RADIUS, BALL_RADIUS),
-                             vec.v2(BALL_RADIUS, BALL_RADIUS))
+            return util.RecV(self.bob_pos - vec.v2(self.ball_radius, self.ball_radius),
+                             vec.v2(self.ball_radius, self.ball_radius))
         else
             return util.Rec(0, 0, 0, 0)
         end

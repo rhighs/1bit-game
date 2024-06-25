@@ -125,7 +125,10 @@ function player:update(dt)
     end
 
     if rl.IsKeyDown(rl.KEY_T) then
-        self:toggle_torch()
+        if self.powerup then
+            self.powerup = self.powerup:use(self)
+        end
+        -- self:toggle_torch()
     end
 
     local new_state = self.state
@@ -246,7 +249,7 @@ function player:dir()
     return h_dir, v_dir
 end
 
-function player:position() return self.body.position end
+function player:position() return vec.copy(self.body.position) end
 
 function player:set_position(pos)
     self.body.position = pos + vec.v2(self.body.radius, self.body.radius)
@@ -268,6 +271,11 @@ function player:update_torch(dt)
     end
 end
 
+function player:collect_powerup(powerup_entity)
+    powerup_entity:collect()
+    self.powerup = powerup_entity
+end
+
 function player_lib.new(player_position)
     player.__index = player
 
@@ -284,6 +292,7 @@ function player_lib.new(player_position)
         facing_dir = vec.v2(1, 0),
         state = PLAYER_STATE_IDLE,
         texture_cycle = cycle.new_values({ 0, 1 }, IDLE_CYCLE_INTERVAL),
+        powerup = nil,
 
         torch = false,
         toggle_torch = cooldown.make_cooled(function (self) self.torch = not self.torch end, 0.2),

@@ -38,6 +38,7 @@ function world_lib.new(data, scene_queue, from_warp)
         decor = data.decor,
         tile_data = data.tiles,
         scene_queue = scene_queue,
+        deferred = {},
         mode = 'enter',
         warp = {
             pos = nil,
@@ -74,6 +75,25 @@ function world_lib.new(data, scene_queue, from_warp)
             self.scene_queue:send({ name = "gameover" })
             return
         end
+
+        for i = 0, #self.deferred do
+            if self.deferred[i] ~= nil then
+                if self.deferred[i].timeout_secs >= 0 then
+                    self.deferred[i].timeout_secs = self.deferred[i].timeout_secs - dt
+                else
+                    self.deferred[i].callback()
+                    self.deferred[i] = nil
+                end
+            end
+        end
+
+        -- local old_cam = self.cam:clone()
+        -- local level_size = vec.v2(self.bounds.width, self.bounds.height)
+        -- self.cam:retarget(vec.clamp(
+        --     self.player:position(),
+        --     self.bounds + consts.VP/2,
+        --     self.bounds + level_size - consts.VP/2
+        -- ))
 
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
@@ -119,6 +139,9 @@ function world_lib.new(data, scene_queue, from_warp)
             e.offscreen_start = self.cam:is_inside(e:get_draw_box()) and -1 or e.offscreen_start + 1
             if self:check_player_bounds(e:get_hitbox()) then
                 e:player_collision(self.player:position())
+                if e.type == "powerup" and e:collectable() then
+                    self.player:collect_powerup(e)
+                end
             end
         end
 
@@ -318,6 +341,13 @@ function world_lib.new(data, scene_queue, from_warp)
         if entt.body ~= nil then
             physics.register_body(entt.body)
         end
+    end
+
+    function world:defer_run(func, timeout_secs)
+        table.insert(self.deferred, {
+            callback = func,
+            timeout_secs = timeout_secs
+        })
     end
 
     function world:send_scene_event(name)

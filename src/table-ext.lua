@@ -58,7 +58,7 @@ end
 
 function table.copy(t)
     local result = {}
-    for k, v in pairs(t) do u[k] = v end
+    for k, v in pairs(t) do result[k] = v end
     return setmetatable(result, getmetatable(t))
 end
 

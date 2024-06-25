@@ -10,10 +10,14 @@ function print_green(...)
    print("\27[32m" .. util.pystr(...) .. "\27[0m")
 end
 
--- TODO: discover files from tests dir
-local test_files = {
-    "cycle_test"
-}
+local test_files = table.filter(
+    table.map(util.dirfiles("tests"), function (f)
+        local s, _ = f:gsub("%.lua", "")
+        return s
+    end),
+    function (f) return f:sub(-#"_test") == "_test" end
+)
+-- GAME_LOG("loading test files", test_files)
 
 local test_blocks = table.map(test_files, function (f) return require(f) end)
 local test_runs = table.map(test_blocks, function (b) return b() end)
@@ -45,7 +49,7 @@ print()
 
 print(string.format("%-30s", "Total blocks:") .. #test_blocks)
 print(string.format("%-30s", "Total tests:") .. total_tests)
-print_green(string.format("%-30s", "Total tests passed:") .. total_tests - total_failed)
-print_red(string.format("%-30s", "Total tests failed:") .. total_failed)
+print_green(string.format("%-30s", "Total passed:") .. total_tests - total_failed)
+print_red(string.format("%-30s", "Total failed:") .. total_failed)
 
 os.exit(total_failed == 0)

@@ -11,6 +11,15 @@ function util.Rec(x, y, w, h) return ffi.new("Rectangle", x, y, w, h) end
 function util.RecV(v, s) return ffi.new("Rectangle", v.x, v.y, s.x, s.y) end
 function util.sign(a) return a >= 0 and 1 or -1 end
 function util.print(text, y) rl.DrawText(text, 0, (y or 0) * 24, 24, rl.WHITE) end
+function util.dirfiles(dir)
+    local files = {}
+    local dir_files = rl.LoadDirectoryFiles(dir)
+    for i = 0, dir_files.count - 1 do
+        local filename = ffi.string(dir_files.paths[i])
+        table.insert(files, filename)
+    end
+    return files
+end
 
 util.DEFAULT_FORMAT_INDENT = 4
 

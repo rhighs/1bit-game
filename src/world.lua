@@ -32,6 +32,7 @@ function world_lib.new(data, scene_queue, from_warp)
         player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start),
         entities = {},
         entity_data = data.entities,
+        id_count = #data.entities + 1,
         cam = camera.new(consts.VP, vec.v2(-math.huge, -math.huge)),
         bounds = data.level_bounds,
         ground = data.ground,
@@ -309,10 +310,17 @@ function world_lib.new(data, scene_queue, from_warp)
         shader:unload()
     end
 
+    function world:get_new_id()
+        local id = self.id_count
+        self.id_count = self.id_count + 1
+        return id
+    end
+
     -- public api functions:
     function world:spawn(data)
-        local new_id = #self.entities + 1
+        local new_id = self:get_new_id()
         data.id = new_id
+        GAME_LOG("spawning new entity with id =", new_id)
         local entt = entity.create_new(self, data)
         self.entities[new_id] = entt
         if entt.body ~= nil then

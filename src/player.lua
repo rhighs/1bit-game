@@ -126,7 +126,15 @@ function player:update(dt)
 
     if rl.IsKeyDown(rl.KEY_T) then
         if self.powerup then
-            self.powerup = self.powerup:use(self)
+            GAME_LOG("using powerup", "\"" .. self.powerup .. "\"")
+            self.world:spawn({
+                enemy_id = self.powerup,
+                pos = self:position(),
+                width = 0,
+                height = 0,
+                direction = vec.copy(self.facing_dir)
+            })
+            self.powerup = nil
         end
         -- self:toggle_torch()
     end
@@ -271,12 +279,11 @@ function player:update_torch(dt)
     end
 end
 
-function player:collect_powerup(powerup_entity)
-    powerup_entity:collect()
-    self.powerup = powerup_entity
+function player:collect_powerup(powerup)
+    self.powerup = powerup
 end
 
-function player_lib.new(player_position)
+function player_lib.new(player_position, world)
     player.__index = player
 
     local body_radius = 16
@@ -286,6 +293,7 @@ function player_lib.new(player_position)
         PLAYER_BODY_DENSITY
     )
     body.id = "player"
+
     return setmetatable({
         speed = physics.METER_UNIT * 10,
         body = body,
@@ -293,6 +301,7 @@ function player_lib.new(player_position)
         state = PLAYER_STATE_IDLE,
         texture_cycle = cycle.new_values({ 0, 1 }, IDLE_CYCLE_INTERVAL),
         powerup = nil,
+        world = world,
 
         torch = false,
         toggle_torch = cooldown.make_cooled(function (self) self.torch = not self.torch end, 0.2),

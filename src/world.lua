@@ -1,5 +1,6 @@
 local ffi = require "ffi"
 local consts = require "consts"
+local event_queue = require "event_queue"
 local util = require "util"
 local player_lib = require "player"
 local loader = require "loader"
@@ -10,6 +11,7 @@ local physics = require "physics"
 local start_screen = require "start-screen-controller"
 local cooldown = require "cooldown"
 local entity = require "entity"
+local textures = require "textures"
 local shader = require "shader"
 
 local world_lib = {}
@@ -29,7 +31,6 @@ function world_lib.new(data, scene_queue, from_warp)
     end
 
     local world = {
-        player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start),
         entities = {},
         entity_data = data.entities,
         id_count = #data.entities + 1,
@@ -39,6 +40,7 @@ function world_lib.new(data, scene_queue, from_warp)
         decor = data.decor,
         tile_data = data.tiles,
         scene_queue = scene_queue,
+        entities_queue = event_queue.new(),
         deferred = {},
         mode = 'enter',
         warp = {
@@ -47,6 +49,9 @@ function world_lib.new(data, scene_queue, from_warp)
             step = 0.05
         }
     }
+
+    local player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start, world)
+    world.player = player
 
     physics.register_body(world.player.body)
 
@@ -88,13 +93,13 @@ function world_lib.new(data, scene_queue, from_warp)
             end
         end
 
-        -- local old_cam = self.cam:clone()
-        -- local level_size = vec.v2(self.bounds.width, self.bounds.height)
-        -- self.cam:retarget(vec.clamp(
-        --     self.player:position(),
-        --     self.bounds + consts.VP/2,
-        --     self.bounds + level_size - consts.VP/2
-        -- ))
+        -- listen for entities events, just powerup pickups now...
+        local ee = self.entities_queue:recv()
+        if ee ~= nil then
+            if ee.type == "powerup-pickup" then
+                self.player.powerup = ee.powerup_tag
+            end
+        end
 
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
@@ -103,6 +108,7 @@ function world_lib.new(data, scene_queue, from_warp)
                 local p = e:get_draw_box()
                 return not e.keepalive and (e.offscreen_start >= 400
                     or p.y > self.bounds.y + self.bounds.height)
+                    or e.destroyed
             end),
             function (e) return e.id end
         )
@@ -140,8 +146,11 @@ function world_lib.new(data, scene_queue, from_warp)
             e.offscreen_start = self.cam:is_inside(e:get_draw_box()) and -1 or e.offscreen_start + 1
             if self:check_player_bounds(e:get_hitbox()) then
                 e:player_collision(self.player:position())
-                if e.type == "powerup" and e:collectable() then
-                    self.player:collect_powerup(e)
+            end
+
+            for _, ee in pairs(self.entities) do
+                if e.id ~= ee.id and rl.CheckCollisionRecs(e:get_hitbox(), ee:get_hitbox()) and e.entity_collision ~= nil then
+                    e:entity_collision(ee.position or ee.pos or nil, ee.id)
                 end
             end
         end
@@ -217,7 +226,38 @@ function world_lib.new(data, scene_queue, from_warp)
         rl.DrawText(text, 10, 10, text_height, rl.WHITE)
         local bar_x = 20 + text_width
         rl.DrawRectangleLines(bar_x, 10, torch_bar_length, text_height, rl.WHITE)
-        rl.DrawRectangle(bar_x, 10, torch_bar_length * (self.player.torch_battery/100.0), text_height, rl.WHITE)
+        rl.DrawRectangle(bar_x, 10, torch_bar_length * (self.player.torch_battery / 100.0), text_height, rl.WHITE)
+
+        -- draw current powerup icon
+        if self.player.powerup ~= nil then
+            local icon_pos = vec.v2(consts.VP_WIDTH - 42, 10)
+            local icon_dims = vec.v2(32, 32)
+            local border_dims = vec.v2(36, 36)
+            local icon_center = icon_pos + (icon_dims / 2)
+            local border_pos = icon_center - (border_dims / 2)
+
+            rl.DrawRectangleLinesEx(
+                util.RecV(
+                    border_pos,
+                    border_dims
+                ),
+                2,
+                rl.WHITE
+            )
+
+            rl.DrawTexturePro(
+                textures.powerups,
+                util.RecV(vec.zero(), vec.v2(32, 32)),
+                util.RecV(
+                    icon_pos,
+                    icon_dims
+                ),
+                vec.zero(),
+                0,
+                rl.WHITE
+            )
+
+        end
     end
 
     function world:draw_at(grid, x, y)

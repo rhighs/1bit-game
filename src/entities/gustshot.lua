@@ -35,17 +35,10 @@ function entity:player_collision(pos)
 end
 
 function entity:entity_collision(position, entity_id)
-    local entity = self.world.entities[entity_id]
-    if position ~= nil and position ~= 0 and entity.enemy_id == "ghost-candle" then
-        local hit_dir = vec.normalize(position - self.position)
-        self.world.entities[entity_id].pos = position + (hit_dir*3)
-    end
-    -- how about:
-    -- self.world:send_event({
-    --     type = "gustshot-hit",
-    --     ...
-    -- })
-    -- and let the entity react to it?
+    self.world:emit_signal("gustshot_hit", {
+        position = self.position,
+        radius = self.radius,
+    }, entity_id)
 end
 
 function gustshot.new(world, position, _w, _h, data)

@@ -20,6 +20,12 @@ function event_queue.new()
         return table.remove(self.buf, 1)
     end
 
+    function queue:recv_all()
+        return function (q)
+            return q:recv()
+        end, self
+    end
+
     return queue
 end
 

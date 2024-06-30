@@ -34,6 +34,7 @@ function world_lib.new(data, scene_queue, from_warp)
         entities = {},
         entity_data = data.entities,
         id_count = #data.entities + 1,
+        signal_queue = event_queue.new(),
         cam = camera.new(consts.VP, vec.v2(-math.huge, -math.huge)),
         bounds = data.level_bounds,
         ground = data.ground,
@@ -93,14 +94,6 @@ function world_lib.new(data, scene_queue, from_warp)
             end
         end
 
-        -- listen for entities events, just powerup pickups now...
-        local ee = self.entities_queue:recv()
-        if ee ~= nil then
-            if ee.type == "powerup-pickup" then
-                self.player.powerup = ee.powerup_tag
-            end
-        end
-
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
         local to_despawn = table.map(
@@ -157,6 +150,18 @@ function world_lib.new(data, scene_queue, from_warp)
 
         self.player:update(dt)
         physics.check_collisions(self.ground, physics.bodies, dt)
+
+        -- listen for entities events, just powerup pickups now...
+        local ee = self.entities_queue:recv()
+        if ee ~= nil then
+            if ee.type == "powerup-pickup" then
+                self.player.powerup = ee.powerup_tag
+            end
+        end
+
+        for ev in self.signal_queue:recv_all() do
+            self:dispatch_signal(ev)
+        end
     end
 
     function world:warp_mode_update(dt, old_cam)
@@ -379,6 +384,21 @@ function world_lib.new(data, scene_queue, from_warp)
         return id
     end
 
+    function world:dispatch_signal(ev)
+        function dispatch_signal(entity)
+            local func = entity["on_signal_" .. ev.signal]
+            if func then
+                func(entity, ev.data)
+            end
+        end
+
+        if ev.entity_id then
+            dispatch_signal(self.entities[ev.entity_id])
+        else
+            for _, e in pairs(self.entities) do dispatch_signal(e) end
+        end
+    end
+
     -- public api functions:
     function world:spawn(data)
         local new_id = self:get_new_id()
@@ -405,6 +425,14 @@ function world_lib.new(data, scene_queue, from_warp)
     function world:warp_to(name, level_name)
         self.warp.data = { name = name, level_name = level_name }
         self.mode = 'warp'
+    end
+
+    function world:emit_signal(signal, data, entity_id)
+        self.signal_queue:send({
+            signal = signal,
+            data = data,
+            entity_id = entity_id 
+        })
     end
 
     return world

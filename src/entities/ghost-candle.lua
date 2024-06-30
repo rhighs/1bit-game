@@ -109,7 +109,7 @@ function ghost_candle.new(world, spawn_pos)
     end
 
     function ghost:get_hitbox()
-        return util.RecV(self.pos + vec.v2(20, 20), vec.v2(64, 64 + 48 - 26) - vec.v2(20, 20))
+        return util.RecV(self.pos + vec.v2(10, 20), vec.v2(64, 64) - vec.v2(20, 20))
     end
 
     function ghost:player_collision(pos)

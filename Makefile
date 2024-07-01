@@ -1,10 +1,10 @@
 prog := ghosts
-level_data := leveldata/level1.lua leveldata/level2.lua
+level_data := leveldata/level1.lua leveldata/level2.lua leveldata/basement.lua
 
 all: $(level_data)
 	LUA_PATH="?;?.lua;src/?.lua" raylua_e src/main.lua && mv main_out $(prog) && echo "ghosts executable available at ./$(prog)"
 
-leveldata/level%.lua: leveldata/level%.tmx leveldata/*.tx leveldata/*.tsx
+leveldata/%.lua: leveldata/%.tmx leveldata/*.tx leveldata/*.tsx
 	tiled --export-map --embed-tilesets --resolve-types-and-properties $< $@
 
 .PHONY: run

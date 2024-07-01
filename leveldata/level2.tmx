@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="25" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="5">
+<map version="1.10" tiledversion="1.10.2" orientation="orthogonal" renderorder="right-down" width="25" height="14" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="7">
  <tileset firstgid="1" source="ground.tsx"/>
  <tileset firstgid="10" source="decor96x96.tsx"/>
+ <tileset firstgid="12" source="decor.tsx"/>
+ <tileset firstgid="52" source="entities.tsx"/>
  <layer id="1" name="ground" width="25" height="14">
   <data encoding="csv">
 4,5,5,5,5,5,2147483652,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -27,25 +29,26 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3221225494,3758096408,3758096408,3758096408,2684354573,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1073741848,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1073741848,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,12,0,0,0,0,1073741848,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,1073741848,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,20,0,0,0,0,1073741848,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,10,0,0,0,28,0,0,0,0,1610612749,3758096408,3758096408,3758096408,3758096408,22,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
  <objectgroup id="3" name="entities">
-  <object id="4" template="door-warp.tx" x="192" y="288">
+  <object id="4" template="door-warp.tx" x="192" y="288" visible="1">
    <properties>
     <property name="to" value="A"/>
     <property name="to_level" value="level1"/>
     <property name="warp_name" value="B"/>
    </properties>
   </object>
+  <object id="6" template="platform.tx" x="612.667" y="360.667"/>
  </objectgroup>
  <objectgroup id="4" name="level-start">
   <object id="1" name="level-start" x="448" y="416">

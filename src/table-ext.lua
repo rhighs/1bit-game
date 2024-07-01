@@ -1,3 +1,18 @@
+function table.range(start, _end)
+    if _end == nil then
+        _end = start
+        start = 0
+    end
+    if start == nil then
+        start = 0
+    end
+    local result = {}
+    for k = start,_end do
+        table.insert(result, k)
+    end
+    return result
+end
+
 function table.contains(t, callable)
     for k, v in pairs(t) do
         if callable(v, k) then

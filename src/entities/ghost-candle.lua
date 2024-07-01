@@ -86,7 +86,7 @@ function ghost_candle.new(world, spawn_pos)
 
     function ghost:on_signal_gustshot_hit(data)
         local hit_dir = vec.normalize(self.pos - data.position)
-        self.pos = self.pos + hit_dir*3
+        self.pos = self.pos + hit_dir*8
     end
 
     function ghost:draw()

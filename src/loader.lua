@@ -50,14 +50,13 @@ end
 function read_tiles(layer, tileset)
     local data = {}
     for y = 1, layer.height do
-        if data[y-1] == nil then
-            data[y-1] = {}
+        if data[y - 1] == nil then
+            data[y - 1] = {}
         end
         for x = 1, layer.width do
             local id = layer.data[(y - 1) * layer.width + x]
             if id ~= nil and id ~= 0 then
                 local gid = bit.band(id, 0xfffffff)
-
                 local tiledata = {
                     flip_horz = bit.band(id, 0x80000000) ~= 0,
                     flip_vert = bit.band(id, 0x40000000) ~= 0,
@@ -68,12 +67,13 @@ function read_tiles(layer, tileset)
                 if tileset ~= nil then
                     local tile = table.find(
                         tileset.tiles,
-                        function (t) return t.id == (gid - tileset.firstgid) end
+                        function(t) return t.id == (gid - tileset.firstgid) end
                     )
-                    tiledata.properties = tile.properties
+                    if tile then
+                        tiledata.properties = tile.properties
+                    end
                 end
-
-                data[y-1][x-1] = tiledata
+                data[y - 1][x - 1] = tiledata
             end
         end
     end
@@ -116,7 +116,7 @@ end
 function loader.load_level(data)
     local tiles = load_tiles(data, { "ground", "decor", "decor96x96", "other-decor" })
     local ground = read_tiles(find_layer(data, "ground"))
-    local decor = read_tiles(find_layer(data, "decor"), find_tileset(data, "decors"))
+    local decor = read_tiles(find_layer(data, "decor"), find_tileset(data, "decor"))
     local entities = read_objects(find_layer(data, "entities"))
 
     local level_start_obj = find_layer(data, "level-start").objects[1]

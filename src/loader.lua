@@ -17,17 +17,28 @@ function load_tiles(data, names)
     for _, name in ipairs(names) do
         local ts = find_tileset(data, name)
         if ts ~= nil then
-            local img = rl.LoadTexture(ts.image:sub(4))
-            local h = ts.imageheight / ts.tileheight
-            local w = ts.imagewidth  / ts.tilewidth
-            for y = 0, h-1 do
-                for x = 0, w-1 do
-                    local id = y * w + x
-                    tiles[ts.firstgid + id] = {
-                        texture = img,
-                        pos = vec.v2(x * ts.tilewidth, y * ts.tileheight),
-                        size = vec.v2(ts.tilewidth, ts.tileheight),
-                        properties = ts.tiles[id] == nil and {} or ts.tiles[id].properties
+            if ts.image then
+                local img = rl.LoadTexture(ts.image:sub(4))
+                local h = ts.imageheight / ts.tileheight
+                local w = ts.imagewidth  / ts.tilewidth
+                for y = 0, h-1 do
+                    for x = 0, w-1 do
+                        local id = y * w + x
+                        tiles[ts.firstgid + id] = {
+                            texture = img,
+                            pos = vec.v2(x * ts.tilewidth, y * ts.tileheight),
+                            size = vec.v2(ts.tilewidth, ts.tileheight),
+                            properties = ts.tiles[id] == nil and {} or ts.tiles[id].properties
+                        }
+                    end
+                end
+            else
+                for _, t in ipairs(ts.tiles) do
+                    tiles[ts.firstgid + t.id] = {
+                        texture = rl.LoadTexture(t.image:sub(4)),
+                        pos = vec.v2(0, 0),
+                        size = vec.v2(t.width, t.height),
+                        properties = t.properties
                     }
                 end
             end
@@ -103,7 +114,7 @@ function compute_bounds(ground)
 end
 
 function loader.load_level(data)
-    local tiles = load_tiles(data, { "ground", "decor", "decor96x96" })
+    local tiles = load_tiles(data, { "ground", "decor", "decor96x96", "other-decor" })
     local ground = read_tiles(find_layer(data, "ground"))
     local decor = read_tiles(find_layer(data, "decor"), find_tileset(data, "decors"))
     local entities = read_objects(find_layer(data, "entities"))

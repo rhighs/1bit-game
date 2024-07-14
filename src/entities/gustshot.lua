@@ -32,7 +32,7 @@ function entity:draw()
         util.RecV(tex_coord, DRAW_DIMS),
         util.RecV(self.position, DRAW_DIMS),
         DRAW_DIMS / 2,
-        math.deg(rl.GetTime()) * 4,
+        math.deg(rl.GetTime()) * 20,
         rl.WHITE
     )
 end

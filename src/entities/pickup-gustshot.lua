@@ -7,6 +7,7 @@ local vec = require "vec"
 local entity = {}
 
 local DRAW_DIMS = vec.v2(32, 32)
+local RESPAWN_COOLDOWN = 1
 
 function entity:update(dt)
     self.position = vec.v2(
@@ -46,7 +47,7 @@ function entity:player_collision(pos)
                 pos = self.init_position
             })
         end,
-        1
+        RESPAWN_COOLDOWN
     )
 end
 

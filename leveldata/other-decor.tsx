@@ -4,7 +4,7 @@
  <tile id="0">
   <image width="64" height="96" source="../assets/window.png"/>
  </tile>
- <tile id="2">
-  <image width="32" height="32" source="../assets/spider-web.png"/>
+ <tile id="3">
+  <image width="64" height="96" source="../assets/window2.png"/>
  </tile>
 </tileset>

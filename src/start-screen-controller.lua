@@ -68,7 +68,7 @@ function start_screen.new(scene_queue)
                     label = "START",
                     callback = function ()
                         GAME_LOG("starting level...")
-                        obj.scene_queue:send({ name = "level", data = { level = "leveldata/level1" } })
+                        obj.scene_queue:send({ name = "level", data = { level = "leveldata/easy-stuff" } })
                     end,
                 },
                 {

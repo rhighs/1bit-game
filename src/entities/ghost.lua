@@ -37,6 +37,11 @@ function entity:player_collision(pos)
     self.world:send_scene_event("gameover")
 end
 
+function entity:on_signal_gustshot_hit(data)
+    local hit_dir = vec.normalize(self.pos - data.position)
+    self.start_pos = self.start_pos + hit_dir*8
+end
+
 function ghost.new(world, spawn_pos, ...)
     entity.__index = entity
     return setmetatable({

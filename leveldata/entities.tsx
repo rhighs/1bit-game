@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.2" name="entities" tilewidth="64" tileheight="74" tilecount="6" columns="0" objectalignment="topleft">
+<tileset version="1.8" tiledversion="1.8.2" name="entities" tilewidth="64" tileheight="74" tilecount="7" columns="0" objectalignment="topleft">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="10">
   <image width="64" height="74" source="../assets/tiled-specific/candle-ghost-tiled.png"/>
@@ -18,5 +18,8 @@
  </tile>
  <tile id="16">
   <image width="32" height="32" source="../assets/tiled-specific/gustshot.png"/>
+ </tile>
+ <tile id="17">
+  <image width="32" height="32" source="../assets/key.png"/>
  </tile>
 </tileset>

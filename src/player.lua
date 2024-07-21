@@ -306,6 +306,8 @@ function player_lib.new(player_position, world)
         torch = false,
         toggle_torch = cooldown.make_cooled(function (self) self.torch = not self.torch end, 0.2),
         torch_battery = 100,
+
+        num_keys = 0,
     }, player)
 end
 

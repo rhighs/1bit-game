@@ -151,11 +151,16 @@ function world_lib.new(data, scene_queue, from_warp)
         self.player:update(dt)
         physics.check_collisions(self.ground, physics.bodies, dt)
 
-        -- listen for entities events, just powerup pickups now...
-        local ee = self.entities_queue:recv()
-        if ee ~= nil then
-            if ee.type == "powerup-pickup" then
-                self.player.powerup = ee.powerup_tag
+        -- listen for entities events
+        for ev in self.entities_queue:recv_all() do
+            if ev ~= nil then
+                if ev.type == "powerup-pickup" then
+                    self.player.powerup = ev.powerup_tag
+                elseif ev.type == "key-got" then
+                    self.player.num_keys = self.player.num_keys + 1
+                elseif ev.type == "key-used" then
+                    self.player.num_keys = self.player.num_keys - 1
+                end
             end
         end
 
@@ -226,42 +231,40 @@ function world_lib.new(data, scene_queue, from_warp)
         -- player torch status
         local torch_bar_length = consts.VP_WIDTH / 3
         local text = "TORCH [T] "
-        local text_height = 18
+        local text_height = 16
         local text_width = rl.MeasureText(text, text_height)
         rl.DrawText(text, 10, 10, text_height, rl.WHITE)
         local bar_x = 20 + text_width
         rl.DrawRectangleLines(bar_x, 10, torch_bar_length, text_height, rl.WHITE)
         rl.DrawRectangle(bar_x, 10, torch_bar_length * (self.player.torch_battery / 100.0), text_height, rl.WHITE)
 
+        -- draw number of keys
+        local key_text_start = bar_x + torch_bar_length + 16
+        local key_text_height = 20
+        rl.DrawTextureV(textures.key_small, vec.v2(key_text_start, 10), rl.WHITE)
+        local key_text = "x " .. tostring(self.player.num_keys)
+        local key_text_length = rl.MeasureText(key_text, key_text_height)
+        rl.DrawText(key_text, key_text_start + textures.key_small.width + 8, 10, key_text_height, rl.WHITE)
+
         -- draw current powerup icon
         if self.player.powerup ~= nil then
+            print("drawing powerup")
             local icon_pos = vec.v2(consts.VP_WIDTH - 42, 10)
             local icon_dims = vec.v2(32, 32)
             local border_dims = vec.v2(36, 36)
             local icon_center = icon_pos + (icon_dims / 2)
             local border_pos = icon_center - (border_dims / 2)
 
-            rl.DrawRectangleLinesEx(
-                util.RecV(
-                    border_pos,
-                    border_dims
-                ),
-                2,
-                rl.WHITE
-            )
+            rl.DrawRectangleLinesEx(util.RecV(border_pos, border_dims), 2, rl.WHITE)
 
             rl.DrawTexturePro(
                 textures.powerups,
                 util.RecV(vec.zero(), vec.v2(32, 32)),
-                util.RecV(
-                    icon_pos,
-                    icon_dims
-                ),
+                util.RecV(icon_pos, icon_dims),
                 vec.zero(),
                 0,
                 rl.WHITE
             )
-
         end
     end
 
@@ -431,7 +434,7 @@ function world_lib.new(data, scene_queue, from_warp)
         self.signal_queue:send({
             signal = signal,
             data = data,
-            entity_id = entity_id 
+            entity_id = entity_id
         })
     end
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.2" name="ground" tilewidth="32" tileheight="32" tilecount="9" columns="3">
- <image source="../assets/ground.png" width="96" height="96"/>
+<tileset version="1.8" tiledversion="1.8.2" name="ground" tilewidth="32" tileheight="32" tilecount="64" columns="8">
+ <image source="../assets/ground.png" width="256" height="256"/>
  <tile id="0">
   <properties>
    <property name="ground_type" value="top"/>
@@ -16,22 +16,22 @@
    <property name="ground_type" value="top"/>
   </properties>
  </tile>
- <tile id="3">
+ <tile id="8">
   <properties>
    <property name="ground_type" value="top"/>
   </properties>
  </tile>
- <tile id="4">
+ <tile id="9">
   <properties>
    <property name="ground_type" value="top"/>
   </properties>
  </tile>
- <tile id="6">
+ <tile id="16">
   <properties>
    <property name="ground_type" value="wall"/>
   </properties>
  </tile>
- <tile id="7">
+ <tile id="17">
   <properties>
    <property name="ground_type" value="fill"/>
   </properties>

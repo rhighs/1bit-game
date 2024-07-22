@@ -70,7 +70,7 @@ function start_screen.new(scene_queue)
                         GAME_LOG("starting level...")
                         obj.scene_queue:send({
                             name = "level",
-                            data = { level = "leveldata/level1" } }
+                            data = { level = "leveldata/jumpjump" } }
                         )
                     end,
                 },

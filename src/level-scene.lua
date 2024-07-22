@@ -13,7 +13,8 @@ function level_scene.new(scene_queue)
             self.world = world.new(
                 loader.load_level(require(data.level)),
                 scene_queue,
-                data.from_warp
+                data.from_warp,
+                data.player_state
             )
             self.world:set_palette(rl.BLACK, rl.WHITE)
         end,

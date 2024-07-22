@@ -18,7 +18,7 @@ local world_lib = {}
 
 world_lib.DRAW_PHYSICS = false
 
-function world_lib.new(data, scene_queue, from_warp)
+function world_lib.new(data, scene_queue, from_warp, player_init_state)
     local shader = shader.create_fragment_shader()
 
     function find_warp(name)
@@ -53,6 +53,10 @@ function world_lib.new(data, scene_queue, from_warp)
 
     local player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start, world)
     world.player = player
+    if player_init_state ~= nil then
+        world.player.powerup = player_init_state.powerup
+        world.player.num_keys = player_init_state.num_keys
+    end
 
     physics.register_body(world.player.body)
 
@@ -179,7 +183,11 @@ function world_lib.new(data, scene_queue, from_warp)
                     name = "level",
                     data = {
                         level = "leveldata/" .. self.warp.data.level_name,
-                        from_warp = self.warp.data.name
+                        from_warp = self.warp.data.name,
+                        player_state = {
+                            powerup = self.player.powerup,
+                            num_keys = self.player.num_keys
+                        }
                     }
                 })
             else
@@ -248,7 +256,6 @@ function world_lib.new(data, scene_queue, from_warp)
 
         -- draw current powerup icon
         if self.player.powerup ~= nil then
-            print("drawing powerup")
             local icon_pos = vec.v2(consts.VP_WIDTH - 42, 10)
             local icon_dims = vec.v2(32, 32)
             local border_dims = vec.v2(36, 36)

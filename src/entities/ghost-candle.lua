@@ -62,6 +62,7 @@ function ghost_candle.new(world, spawn_pos)
         elseif self.state == "hit" then
             if self.hit_dir then
                 self.pos = self.pos + self.hit_dir * dt
+                self.ghost_frame  = math.floor(self.timer / 8) % 2
             end
         end
     end

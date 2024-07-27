@@ -4,7 +4,7 @@ local interactable = require "interactable-entity"
 
 function door_warp.new(world, pos, width, height, data)
     return interactable.new(pos, width, height, function()
-        world:warp_to(data.data.to, data.data.to_level)
+        world:warp_to(data.props.to, data.props.to_level)
     end)
 end
 

@@ -29,14 +29,14 @@ function ball_type_data(t)
 end
 
 function arm.new(world, spawn_pos, _w, _h, data)
-    local ball_data = ball_type_data(data.data.ball_type)
+    local ball_data = ball_type_data(data.props.ball_type)
     local dir = world.player:position().x < spawn_pos.x and -1 or 1
     local arm = {
         pivot_pos = vec.copy(spawn_pos),
         bob_pos = spawn_pos + vec.v2(0, 4 * 32),
         w = 3.5 * dir * -1,
         angle = 0,
-        radius = data.data.radius,
+        radius = data.props.radius,
         state = "pendulum",
         event_queue = event_queue.new(),
         world = world,
@@ -80,7 +80,7 @@ function arm.new(world, spawn_pos, _w, _h, data)
                 radius = self.radius,
                 arm_queue = self.event_queue,
                 direction = self.direction,
-                ball_type = data.data.ball_type,
+                ball_type = data.props.ball_type,
                 ball_frame = self.ball_frame,
                 ball_size  = self.ball_size
             })

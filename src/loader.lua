@@ -89,7 +89,7 @@ function read_objects(layer)
             enemy_id = v.name,
             width = v.width,
             height = v.height,
-            data = v.properties
+            props = v.properties
         })
     end
     return objs

@@ -35,7 +35,7 @@ end
 function entity:player_collision(pos)
     self.player_inside = true
     if rl.IsKeyReleased(rl.KEY_E) then
-        return self.on_interaction()
+        return self:on_interaction()
     end
     return nil
 end
@@ -47,8 +47,7 @@ function interactable.new(pos, width, height, on_interaction)
     return setmetatable({
         pos = pos,
         bounds = bounds,
-
-        on_interaction = cooldown.make_cooled(on_interaction, INTERACTION_WAIT),
+        on_interaction = on_interaction,
         message = "[E] interact",
         player_inside = false
     }, entity)

@@ -22,12 +22,12 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
     local shader = shader.create_fragment_shader()
 
     function find_warp(name)
-        local warp = table.find(data.entities, function (e) return e.data.warp_name == name end)
+        local warp = table.find(data.entities, function (e) return e.props.warp_name == name end)
         if warp == nil then
             GAME_LOG("WARNING: no warp found: " .. name)
             return nil
         end
-        return vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height)
+        return vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height - 32)
     end
 
     local world = {
@@ -371,6 +371,8 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
 
         self:draw_hud(dt)
         rl.EndShaderMode()
+
+        util.print("player pos =" .. tostring(self.player:position()), 4)
     end
 
     function world:destroy()

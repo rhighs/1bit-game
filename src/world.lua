@@ -33,7 +33,10 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
     local world = {
         entities = {},
         entity_data = data.entities,
+        entities_queue = event_queue.new(),
+        entities_despawned_forever = {},
         id_count = #data.entities + 1,
+
         signal_queue = event_queue.new(),
         cam = camera.new(consts.VP, vec.v2(-math.huge, -math.huge)),
         bounds = data.level_bounds,
@@ -41,7 +44,6 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         decor = data.decor,
         tile_data = data.tiles,
         scene_queue = scene_queue,
-        entities_queue = event_queue.new(),
         deferred = {},
         mode = 'enter',
         warp = {
@@ -100,24 +102,13 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
 
         -- despawn entities when they stay off-screen for too much time
         -- or if they've fallen inside pits
-        local to_despawn = table.map(
-            table.filter(self.entities, function (e)
-                local p = e:get_draw_box()
-                return not e.keepalive and (e.offscreen_start >= 400
-                    or p.y > self.bounds.y + self.bounds.height)
-                    or e.destroyed
-            end),
-            function (e) return e.id end
-        )
-        for _, id in ipairs(to_despawn) do
-            GAME_LOG("despawning entity with id =", id)
-            if self.entities[id].on_despawn ~= nil then
-                self.entities[id]:on_despawn()
-            end
-            if self.entities[id].body ~= nil then
-                physics.unregister_body(self.entities[id].body)
-            end
-            self.entities[id] = nil
+        local to_despawn = table.filter(self.entities, function (e)
+            local p = e:get_draw_box()
+            return not e.keepalive
+               and (e.offscreen_count >= 400 or p.y > self.bounds.y + self.bounds.height)
+        end)
+        for _, e in pairs(to_despawn) do
+            self:despawn(e)
         end
 
         -- spawn new entities when they come inside the camera
@@ -127,20 +118,18 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
                 return self.entities[e.id] == nil
                    and self.cam:is_inside(util.RecV(e.pos, vec.v2(e.width, e.height)))
                    and not old_cam:is_inside(util.RecV(e.pos, vec.v2(e.width, e.height)))
+                   and self.entities_despawned_forever[e.id] == nil
             end
         )
         for _, e in ipairs(new_entities) do
-            GAME_LOG("spawning new entity with id =", e.id)
-            local entt = entity.create_new(self, e)
-            self.entities[e.id] = entt
-            if entt.body ~= nil then
-                physics.register_body(entt.body)
-            end
+            self:spawn(e)
         end
 
+        -- update entities: first their update function, then the offscreen
+        -- frame count, then their collisions (player and other entities)
         for _, e in pairs(self.entities) do
             e:update(dt)
-            e.offscreen_start = self.cam:is_inside(e:get_draw_box()) and -1 or e.offscreen_start + 1
+            e.offscreen_count = self.cam:is_inside(e:get_draw_box()) and -1 or e.offscreen_count + 1
             if self:check_player_bounds(e:get_hitbox()) then
                 e:player_collision(self.player:position())
             end
@@ -409,15 +398,30 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         end
     end
 
-    -- public api functions:
     function world:spawn(data)
-        local new_id = self:get_new_id()
-        data.id = new_id
-        GAME_LOG("spawning new entity with id =", new_id)
+        if data.id == nil then
+            data.id = self:get_new_id()
+        end
+        GAME_LOG("spawning new entity with id =", data.id)
         local entt = entity.create_new(self, data)
-        self.entities[new_id] = entt
+        self.entities[data.id] = entt
         if entt.body ~= nil then
             physics.register_body(entt.body)
+        end
+        entt.offscreen_count = -1
+    end
+
+    function world:despawn(entity, never_respawn)
+        GAME_LOG("despawning entity with id =", entity.id)
+        if self.entities[entity.id].on_despawn ~= nil then
+            self.entities[entity.id]:on_despawn()
+        end
+        if self.entities[entity.id].body ~= nil then
+            physics.unregister_body(self.entities[entity.id].body)
+        end
+        self.entities[entity.id] = nil
+        if never_respawn then
+            self.entities_despawned_forever[entity.id] = true
         end
     end
 

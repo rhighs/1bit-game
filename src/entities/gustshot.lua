@@ -18,7 +18,7 @@ function entity:update(dt)
     end
     local t_id = self.cycle:current()
     if t_id == 15 then
-        self.destroyed = true
+        self.world:despawn(self)
     end
     self.position = self.position + self.velocity * dt
 end

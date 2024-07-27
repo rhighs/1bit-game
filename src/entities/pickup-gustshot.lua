@@ -36,7 +36,6 @@ function entity:get_hitbox()
 end
 
 function entity:player_collision(pos)
-    self.destroyed = true
     self.world.entities_queue:send({
         type = "powerup-pickup",
         powerup_tag = "gustshot"
@@ -49,6 +48,7 @@ function entity:player_collision(pos)
         end,
         RESPAWN_COOLDOWN
     )
+    self.world:despawn(self)
 end
 
 function gustshot.new(world, position, ...)

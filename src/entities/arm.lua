@@ -15,6 +15,8 @@ local ARM_FRAME_THROW = vec.v2(32, 0)
 local CHAIN_FRAME     = vec.v2(64, 48)
 local HOOK_FRAME      = vec.v2(80, 48)
 
+local APPEAR_STATE_TIME_MAX = 50
+
 function ball_type_data(t)
     return t == 'small' and {
         frame = vec.v2( 64, 0), size = vec.v2(48, 48), init_force = vec.v2(2000, 6000)
@@ -98,6 +100,7 @@ function arm.new(world, spawn_pos, _w, _h, data)
         local ev = self.event_queue:recv()
         if ev == 'chain-ball-despawned' then
             self.state = 'appear'
+            self.time = 0
             self.pos = 100
             self.bob_pos = self.pivot_pos + vec.v2(0, self.radius)
         end
@@ -106,10 +109,8 @@ function arm.new(world, spawn_pos, _w, _h, data)
     function arm:state_appear(dt)
         self.time = self.time + 1
         self.pos = self.pos - 1
-        self.bob_pos = self.pivot_pos + vec.v2(
-            self.pos * (self.time % 4 < 2 and 1 or -1), self.radius
-        )
-        if self.pos == 0 then
+        self.bob_pos = self.pivot_pos + vec.v2(0, self.radius)
+        if self.time > APPEAR_STATE_TIME_MAX then
             self.state = "pendulum"
             self.direction = world.player:position().x < self.pivot_pos.x and -1 or 1
             self.w = 3.5 * self.direction * -1
@@ -176,7 +177,7 @@ function arm.new(world, spawn_pos, _w, _h, data)
                 ),
                 vec.v2(0, 0),
                 0,
-                rl.WHITE
+                util.Color(255, 255, 255, self.time / APPEAR_STATE_TIME_MAX * 255)
             )
             for i = 0, num_chains-1 do
                 local y = ARM_HEIGHT - ARM_OFFSET + i*CHAIN_HEIGHT
@@ -186,7 +187,7 @@ function arm.new(world, spawn_pos, _w, _h, data)
                     util.RecV(vec.v2(self.bob_pos.x, self.pivot_pos.y + y), vec.v2(16, 16)),
                     vec.v2(8, 0),
                     0,
-                    rl.WHITE
+                    util.Color(255, 255, 255, self.time / APPEAR_STATE_TIME_MAX * 255)
                 )
             end
             rl.DrawTexturePro(
@@ -195,7 +196,7 @@ function arm.new(world, spawn_pos, _w, _h, data)
                 util.RecV(self.bob_pos, self.ball_size),
                 self.ball_size * 0.5,
                 0,
-                rl.WHITE
+                util.Color(255, 255, 255, self.time / APPEAR_STATE_TIME_MAX * 255)
             )
         end
     end

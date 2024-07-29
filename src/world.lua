@@ -371,8 +371,6 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
 
         self:draw_hud(dt)
         rl.EndShaderMode()
-
-        util.print("player pos =" .. tostring(self.player:position()), 4)
     end
 
     function world:destroy()

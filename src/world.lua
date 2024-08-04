@@ -22,12 +22,18 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
     local shader = shader.create_fragment_shader()
 
     function find_warp(name)
-        local warp = table.find(data.entities, function (e) return e.props.warp_name == name end)
+        local warp = table.find(data.entities, function (e)
+            return e.props.warp_name == name
+        end)
         if warp == nil then
             GAME_LOG("WARNING: no warp found: " .. name)
             return nil
         end
-        return vec.v2(warp.pos.x + warp.width/2, warp.pos.y + warp.height - 32)
+        GAME_LOG("warping to ", warp.pos)
+        return vec.v2(
+            warp.pos.x + warp.width/2,
+            warp.pos.y + warp.height
+        )
     end
 
     local world = {
@@ -53,7 +59,8 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         }
     }
 
-    local player = player_lib.new(from_warp ~= nil and find_warp(from_warp) or data.level_start, world)
+    local start_pos = from_warp ~= nil and find_warp(from_warp) or data.level_start
+    local player = player_lib.new(start_pos, world)
     world.player = player
     if player_init_state ~= nil then
         world.player.powerup = player_init_state.powerup
@@ -184,7 +191,8 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
                 if warp == nil then
                     return
                 end
-                self.player:set_position(warp)
+                self.player:set_position(warp - vec.v2(0, player_lib.BODY_RADIUS))
+                GAME_LOG(self.player:position())
                 self:normal_update(dt, old_cam)
                 self.warp.data = nil
             end

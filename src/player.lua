@@ -11,6 +11,7 @@ local player_lib = {}
 
 player_lib.DEBUG_DRAW = false
 player_lib.DEBUG_STATE = false
+player_lib.BODY_RADIUS = 16
 
 local player = {}
 
@@ -260,7 +261,7 @@ end
 function player:position() return vec.copy(self.body.position) end
 
 function player:set_position(pos)
-    self.body.position = pos + vec.v2(self.body.radius, self.body.radius)
+    self.body.position = pos
 end
 
 function player:jump() self.body.velocity.y = -math.sqrt(self.body.gravity.y * 2 * PLAYER_JUMP_HEIGHT) end
@@ -286,10 +287,9 @@ end
 function player_lib.new(player_position, world)
     player.__index = player
 
-    local body_radius = 16
     local body = physics.new_circle(
-        player_position - vec.v2(0, body_radius),
-        body_radius,
+        player_position - vec.v2(0, player_lib.BODY_RADIUS),
+        player_lib.BODY_RADIUS,
         PLAYER_BODY_DENSITY
     )
     body.id = "player"

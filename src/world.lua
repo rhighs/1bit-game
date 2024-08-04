@@ -56,6 +56,11 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
             pos = nil,
             fade_light = 0.0,
             step = 0.05
+        },
+        level_trans = {
+            level_name = nil,
+            fade_light = 0.0,
+            step = 0.05
         }
     }
 
@@ -216,6 +221,20 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         self:set_lightness(self.warp.fade_light)
     end
 
+    function world:level_exit_mode_update(dt, old_cam)
+        local lightness = self.level_trans.fade_light - self.level_trans.step
+        self.level_trans.fade_light = lightness > 0 and lightness or 0
+        self:set_lightness(self.level_trans.fade_light)
+        if self.level_trans.fade_light == 0.0 then
+            self.scene_queue:send({
+                name = "leveltransition",
+                data = {
+                    level_name = self.level_trans.level_name
+                }
+            })
+        end
+    end
+
     function world:update(dt)
         local old_cam = self.cam:clone()
         local level_size = vec.v2(self.bounds.width, self.bounds.height)
@@ -225,9 +244,10 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
             self.bounds + level_size - consts.VP/2
         ))
 
-            if self.mode == 'warp'   then self:warp_mode_update(dt, old_cam)
-        elseif self.mode == 'normal' then self:normal_update(dt, old_cam)
-        elseif self.mode == 'enter'  then self:enter_mode_update(dt, old_cam)
+            if self.mode == 'warp'       then self:warp_mode_update(dt, old_cam)
+        elseif self.mode == 'normal'     then self:normal_update(dt, old_cam)
+        elseif self.mode == 'enter'      then self:enter_mode_update(dt, old_cam)
+        elseif self.mode == 'level-exit' then self:level_exit_mode_update(dt, old_cam)
         else error('invalid mode: ' .. self.mode) end
     end
 
@@ -402,7 +422,11 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         if ev.entity_id then
             dispatch_signal(self.entities[ev.entity_id])
         else
-            for _, e in pairs(self.entities) do dispatch_signal(e) end
+            for _, e in pairs(self.entities) do
+                if e ~= nil then
+                    dispatch_signal(e)
+                end
+            end
         end
     end
 
@@ -433,6 +457,12 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         end
     end
 
+    function world:trigger_level_transition(level_name)
+        self.mode = "level-exit"
+        self.level_trans.level_name = level_name
+        self.level_trans.fade_light = 1.0
+    end
+
     function world:defer_run(func, timeout_secs)
         table.insert(self.deferred, {
             callback = func,
@@ -440,8 +470,8 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         })
     end
 
-    function world:send_scene_event(name)
-        self.scene_queue:send({ name = name })
+    function world:send_scene_event(name, data)
+        self.scene_queue:send({ name = name, data = data })
     end
 
     function world:warp_to(name, level_name)

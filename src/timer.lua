@@ -11,6 +11,10 @@ function timer:update(dt)
     end
 end
 
+function timer:get()
+    return self.current
+end
+
 function timer_lib.new(wait_secs)
     timer.__index = timer
     return setmetatable({

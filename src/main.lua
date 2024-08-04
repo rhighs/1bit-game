@@ -10,6 +10,7 @@ local level_completed = require "level-completed-scene"
 local player = require "player"
 local textures = require "textures"
 local event_queue = require "event_queue"
+local level_transition = require "level-transition-scene"
 
 rl.SetConfigFlags(rl.FLAG_VSYNC_HINT)
 rl.InitWindow(consts.VP_WIDTH, consts.VP_HEIGHT, "1bit ghost house")
@@ -22,6 +23,7 @@ local scenes = {
         ["start"] = start_screen_controller.new(scene_events),
         ["level"] = level_scene.new(scene_events),
         ["levelcompleted"] = level_completed.new(scene_events, 1.0),
+        ["leveltransition"] = level_transition.new(scene_events, 2.0),
         ["gameover"] = game_over.new(scene_events, 1.0)
     },
     cur = "start",

@@ -45,9 +45,6 @@ function entity:get_hitbox()
     return util.RecV(self.position, vec.v2(self.radius * 2, self.radius * 2))
 end
 
-function entity_collision(pos)
-end
-
 function entity:player_collision(pos)
 end
 

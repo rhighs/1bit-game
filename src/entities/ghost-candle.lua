@@ -1,6 +1,7 @@
 local textures = require "textures"
 local vec = require "vec"
 local util = require "util"
+local timer = require "timer"
 
 local ghost_candle = {}
 
@@ -58,6 +59,11 @@ function ghost_candle.new(world, spawn_pos)
                 self.state = "moving"
                 self.timer = 0
             end
+        elseif self.state == "hit" then
+            if self.hit_dir then
+                self.pos = self.pos + self.hit_dir * dt
+                self.ghost_frame  = math.floor(self.timer / 8) % 2
+            end
         end
     end
 
@@ -85,8 +91,15 @@ function ghost_candle.new(world, spawn_pos)
     end
 
     function ghost:on_signal_gustshot_hit(data)
-        local hit_dir = vec.normalize(self.pos - data.position)
-        self.pos = self.pos + hit_dir*8
+        if self.state ~= "hit" then
+            self.hit_dir = 
+                vec.v2((vec.normalize(self.pos - data.position) * (32 * 10)).x, 0)
+            self.state = "hit"
+            self.world:defer_run(function ()
+                self.state = "moving"
+                self.hit_dest = nil
+            end, 1)
+        end
     end
 
     function ghost:draw()
@@ -109,7 +122,10 @@ function ghost_candle.new(world, spawn_pos)
     end
 
     function ghost:get_hitbox()
-        return util.RecV(self.pos + vec.v2(10, 20), vec.v2(64, 64) - vec.v2(20, 20))
+        return util.RecV(self.pos, vec.v2(64, 64 + 48 - 26))
+        -- local rec = util.RecV(self.pos + vec.v2(10, 20), vec.v2(64, 64) - vec.v2(20, 20))
+        -- rl.DrawRectangleLines(rec.x, rec.y, rec.width, rec.height, rl.WHITE)
+        -- return rec
     end
 
     function ghost:player_collision(pos)

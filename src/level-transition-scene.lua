@@ -1,6 +1,7 @@
 local timer = require "timer"
 local util = require "util"
 local shader = require "shader"
+local timed_fade = require "timed-fade"
 
 local level_trans = {}
 
@@ -10,12 +11,12 @@ function scene:destroy() end
 
 function scene:init(data)
     self.level_name = data.level_name
-    self.timer:reset()
+    self.timed_fade:reset()
 end
 
 function scene:update(dt)
-    self.timer:update(dt)
-    if self.timer:done() then
+    self.timed_fade:update(dt)
+    if self.timed_fade:done() then
         self.scene_queue:send({
             name = "level",
             data = {
@@ -23,14 +24,7 @@ function scene:update(dt)
             }
         })
     end
- 
-    local t = self.scene_duration - self.timer:get() 
-    self.alpha = util.clamp(
-        (t < self.fade_duration                       and                       t) or
-        (t > self.scene_duration - self.fade_duration and self.scene_duration - t) or
-        1,
-        0, 1
-    )
+    self.alpha = self.timed_fade:get()
 end
 
 function scene:draw()
@@ -42,11 +36,8 @@ end
 function level_trans.new(scene_queue, duration_secs)
     scene.__index = scene
     return setmetatable({
-        timer = timer.new(duration_secs),
-        scene_duration = duration_secs,
-        fade_duration = duration_secs * 0.33,
-        shader = shader.create_fragment_shader(),
         scene_queue = scene_queue,
+        timed_fade = timed_fade.new(duration_secs, timed_fade.FADE_MODE_BOTH),
         alpha = 0.0,
     }, scene)
 end

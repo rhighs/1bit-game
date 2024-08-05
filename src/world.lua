@@ -13,6 +13,7 @@ local cooldown = require "cooldown"
 local entity = require "entity"
 local textures = require "textures"
 local shader = require "shader"
+local timed_fade = require "timed-fade"
 
 local world_lib = {}
 
@@ -54,12 +55,13 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
         mode = 'enter',
         warp = {
             pos = nil,
-            fade_light = 0.0,
-            step = 0.05
         },
         level_trans = {
             level_name = nil,
-            fade_light = 0.0,
+        },
+        timed_fade_out = timed_fade.new(2.0, timed_fade.FADE_MODE_OUT),
+        lighting = {
+            value = 0.0,
             step = 0.05
         }
     }
@@ -175,10 +177,11 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
     end
 
     function world:warp_mode_update(dt, old_cam)
-        self.warp.fade_light = self.warp.fade_light + self.warp.step
-        if self.warp.fade_light < 0 and self.warp.step < 0 then
-            self.warp.step = -self.warp.step
+        self.lighting.value = self.lighting.value + self.lighting.step
+        if self.lighting.value < 0 and self.lighting.step < 0 then
+            self.lighting.step = -self.lighting.step
             self:set_lightness(0)
+
             if self.warp.data.level_name ~= nil and self.warp.data.level_name ~= "" then
                 self.scene_queue:send({
                     name = "level",
@@ -201,31 +204,31 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
                 self:normal_update(dt, old_cam)
                 self.warp.data = nil
             end
-        elseif self.warp.fade_light > 1.0 and self.warp.step > 0 then
-            self.warp.step = -self.warp.step
+        elseif self.lighting.value > 1.0 and self.lighting.step > 0 then
+            self.lighting.step = -self.lighting.step
             self.mode = 'normal'
         else
-            self:set_lightness(self.warp.fade_light)
+            self:set_lightness(self.lighting.value)
         end
     end
 
     function world:enter_mode_update(dt, old_cam)
-        if self.warp.fade_light == 0.0 then
+        if self.lighting.value == 0.0 then
             self:normal_update(dt, old_cam)
         end
-        self.warp.fade_light = self.warp.fade_light + self.warp.step
-        if self.warp.fade_light > 1.0 and self.warp.step > 0 then
-            self.warp.step = -self.warp.step
+        self.lighting.value = self.lighting.value + self.lighting.step
+        if self.lighting.value > 1.0 and self.lighting.step > 0 then
+            self.lighting.step = -self.lighting.step
             self.mode = 'normal'
         end
-        self:set_lightness(self.warp.fade_light)
+        self:set_lightness(self.lighting.value)
     end
 
     function world:level_exit_mode_update(dt, old_cam)
-        local lightness = self.level_trans.fade_light - self.level_trans.step
-        self.level_trans.fade_light = lightness > 0 and lightness or 0
-        self:set_lightness(self.level_trans.fade_light)
-        if self.level_trans.fade_light == 0.0 then
+        self.timed_fade_out:update(dt)
+        self:set_lightness(self.timed_fade_out:get())
+        if self.timed_fade_out:done() then
+            self.timed_fade_out:reset()
             self.scene_queue:send({
                 name = "leveltransition",
                 data = {
@@ -460,7 +463,8 @@ function world_lib.new(data, scene_queue, from_warp, player_init_state)
     function world:trigger_level_transition(level_name)
         self.mode = "level-exit"
         self.level_trans.level_name = level_name
-        self.level_trans.fade_light = 1.0
+        self.lighting.value = 1.0
+        self.lighting.step = math.abs(self.lighting.step)
     end
 
     function world:defer_run(func, timeout_secs)

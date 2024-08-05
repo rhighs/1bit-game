@@ -23,7 +23,7 @@ local scenes = {
         ["start"] = start_screen_controller.new(scene_events),
         ["level"] = level_scene.new(scene_events),
         ["levelcompleted"] = level_completed.new(scene_events, 1.0),
-        ["leveltransition"] = level_transition.new(scene_events, 2.0),
+        ["leveltransition"] = level_transition.new(scene_events, 3.0),
         ["gameover"] = game_over.new(scene_events, 1.0)
     },
     cur = "start",
